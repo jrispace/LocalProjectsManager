@@ -246,39 +246,23 @@
     return bytes.toFixed(i ? 1 : 0) + " " + u[i];
   }
 
-  /* ── Download: fetch latest release zip, save locally. NO redirect. ── */
+  /* ── Download: NAVIGATION-based download via "latest/download" URL.
+     No GitHub API involved → no rate limits, no CORS, works from file://
+     AND https://. The <a download> keeps the page in place (never redirects
+     the tab); GitHub's Content-Disposition: attachment triggers a save. ── */
   function downloadApp() {
     if ($btn.disabled) return;
     $btn.disabled = true;
-    setStatus("⏳ Fetching latest release…", "");
-    fetch(API)
-      .then(function (r) {
-        if (!r.ok) throw new Error("Release not found (HTTP " + r.status + ")");
-        return r.json();
-      })
-      .then(function (rel) {
-        var asset = rel.assets.find(function (a) { return /\.zip$/i.test(a.name); });
-        if (!asset) throw new Error("No zip asset in the latest release");
-        setStatus("⬇️ Downloading " + asset.name + " (" + fmt(asset.size) + ")…", "");
-        return fetch(asset.browser_download_url).then(function (r) {
-          if (!r.ok) throw new Error("Download failed (HTTP " + r.status + ")");
-          return r.blob();
-        }).then(function (blob) {
-          var url = URL.createObjectURL(blob);
-          var a = document.createElement("a");
-          a.href = url;
-          a.download = asset.name;
-          document.body.appendChild(a);
-          a.click();
-          a.remove();
-          setTimeout(function () { URL.revokeObjectURL(url); }, 4000);
-          setStatus("✅ " + asset.name + " downloaded — check your Downloads folder.", "ok");
-        });
-      })
-      .catch(function (e) {
-        setStatus("⚠️ " + e.message + " — check your connection and try again.", "err");
-      })
-      .finally(function () { $btn.disabled = false; });
+    setStatus("⬇️ Fetching latest release…", "");
+    var a = document.createElement("a");
+    a.href = "https://github.com/" + REPO + "/releases/latest/download/LocalProjectsManager.zip";
+    a.download = "LocalProjectsManager.zip";
+    a.rel = "noopener";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setStatus("✅ Download started — check your Downloads folder. The latest version is always fetched.", "ok");
+    setTimeout(function () { $btn.disabled = false; }, 2500);
   }
 
   function setStatus(msg, cls) {
