@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LocalProjectsManager — JRiSpace Project Manager</title>
+<meta name="description" content="LocalProjectsManager — 100% local project manager. Your data never leaves your machine. Download the latest version free.">
+<style>
+  :root {
+    --brand: #0b63f6;
+    --brand-dark: #0141c2;
+    --brand-soft: #e8f0fe;
+    --ink: #1a2433;
+    --muted: #5c6b82;
+    --border: #dbe3f0;
+    --bg: #f5f8ff;
+    --ok: #16a34a;
+    --warn: #d97706;
+    --danger: #dc2626;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 980px; margin: 0 auto; padding: 0 22px; }
+
+  /* ── Hero ─────────────────────────────────────────────── */
+  .hero {
+    background: linear-gradient(135deg, #0141c2 0%, #0b63f6 55%, #38bdf8 100%);
+    color: #fff;
+    padding: 72px 0 64px;
+    text-align: center;
+  }
+  .hero .logo {
+    display: inline-block;
+    background: rgba(255,255,255,.14);
+    border: 1px solid rgba(255,255,255,.25);
+    backdrop-filter: blur(6px);
+    border-radius: 14px;
+    padding: 10px 18px;
+    font-size: 15px;
+    font-weight: 800;
+    letter-spacing: .4px;
+    margin-bottom: 22px;
+  }
+  .hero h1 { font-size: 44px; font-weight: 900; letter-spacing: -.5px; margin-bottom: 14px; }
+  .hero p.tag { font-size: 18px; color: rgba(255,255,255,.92); max-width: 640px; margin: 0 auto 30px; }
+  .hero-btns { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 9px;
+    font: inherit; font-weight: 800; font-size: 15.5px;
+    padding: 14px 26px; border-radius: 12px; cursor: pointer;
+    text-decoration: none; transition: transform .12s ease, box-shadow .12s ease;
+  }
+  .btn:hover { transform: translateY(-2px); }
+  .btn-primary { background: #fff; color: var(--brand-dark); border: none; box-shadow: 0 8px 24px rgba(0,0,0,.22); }
+  .btn-primary:hover { box-shadow: 0 12px 30px rgba(0,0,0,.3); }
+  .btn-ghost { background: rgba(255,255,255,.12); color: #fff; border: 1px solid rgba(255,255,255,.4); }
+  .btn-ghost:hover { background: rgba(255,255,255,.2); }
+  .btn:disabled { opacity: .65; cursor: wait; transform: none; }
+  .dl-status {
+    margin-top: 18px; font-size: 14px; font-weight: 600;
+    color: rgba(255,255,255,.95); min-height: 22px;
+  }
+  .dl-status.ok { color: #bbf7d0; }
+  .dl-status.err { color: #fecaca; }
+
+  /* ── Sections ─────────────────────────────────────────── */
+  section { padding: 52px 0; }
+  section.alt { background: #fff; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+  h2 { font-size: 27px; font-weight: 850; letter-spacing: -.3px; margin-bottom: 10px; color: var(--ink); }
+  h2 .em { color: var(--brand); }
+  .sub { color: var(--muted); font-size: 15.5px; max-width: 700px; margin-bottom: 28px; }
+
+  /* Privacy banner */
+  .privacy {
+    display: flex; gap: 16px; align-items: flex-start;
+    background: #fff; border: 1px solid rgba(13, 148, 136, .35);
+    border-left: 5px solid #0d9488;
+    border-radius: 14px; padding: 20px 22px; margin-bottom: 34px;
+    box-shadow: 0 4px 16px rgba(13, 148, 136, .08);
+  }
+  .privacy .ico { font-size: 30px; line-height: 1; }
+  .privacy h3 { font-size: 16.5px; margin-bottom: 4px; color: #0f766e; }
+  .privacy p { font-size: 14.5px; color: var(--muted); }
+  .privacy p b { color: var(--ink); }
+
+  /* Feature cards */
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 16px; }
+  .card {
+    background: #fff; border: 1px solid var(--border); border-radius: 14px;
+    padding: 20px; box-shadow: 0 2px 10px rgba(1, 65, 194, .05);
+  }
+  .card .ico { font-size: 26px; margin-bottom: 10px; }
+  .card h4 { font-size: 15.5px; margin-bottom: 6px; }
+  .card p { font-size: 13.5px; color: var(--muted); }
+
+  /* Steps */
+  ol.steps { counter-reset: st; list-style: none; display: grid; gap: 14px; }
+  ol.steps li {
+    counter-increment: st;
+    display: flex; gap: 16px; align-items: flex-start;
+    background: #fff; border: 1px solid var(--border); border-radius: 12px; padding: 16px 18px;
+  }
+  ol.steps li::before {
+    content: counter(st);
+    flex: 0 0 34px; height: 34px; border-radius: 50%;
+    background: var(--brand); color: #fff; font-weight: 800; font-size: 16px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  ol.steps b { display: block; margin-bottom: 2px; }
+  ol.steps span { font-size: 14px; color: var(--muted); }
+  code {
+    background: var(--brand-soft); color: var(--brand-dark);
+    padding: 2px 7px; border-radius: 6px; font-size: 13px; font-weight: 600;
+  }
+
+  /* Release / footer */
+  .rel-info { display: flex; gap: 18px; flex-wrap: wrap; margin-top: 8px; }
+  .rel-info div { background: #fff; border: 1px solid var(--border); border-radius: 12px; padding: 14px 18px; font-size: 13.5px; }
+  .rel-info b { display: block; font-size: 17px; color: var(--brand-dark); }
+  footer {
+    background: #0b1220; color: rgba(255,255,255,.75);
+    padding: 34px 0 40px; font-size: 13.5px; text-align: center;
+  }
+  footer b { color: #fff; }
+  footer a { color: #7dd3fc; text-decoration: none; }
+</style>
+</head>
+<body>
+
+<!-- ══════════ HERO ══════════ -->
+<div class="hero">
+  <div class="wrap">
+    <div class="logo">JRiSpace · LOCAL PROJECTS MANAGER</div>
+    <h1>Your projects. Your machine. <br>Nothing leaves your computer.</h1>
+    <p class="tag">A 100% local project manager — track every project, phase and task with a live dashboard, progress reports and system health. No account, no server, no tracking.</p>
+    <div class="hero-btns">
+      <button class="btn btn-primary" id="dlBtn">⬇️ Download App (.zip)</button>
+      <a class="btn btn-ghost" href="app.html">🚀 Open App locally</a>
+    </div>
+    <div class="dl-status" id="dlStatus">Click the button — it fetches the latest release from GitHub and downloads the zip. You are never redirected away.</div>
+  </div>
+</div>
+
+<!-- ══════════ PRIVACY + FEATURES ══════════ -->
+<section>
+  <div class="wrap">
+    <div class="privacy">
+      <div class="ico">🔒</div>
+      <div>
+        <h3>Your data stays on your machine — 100%</h3>
+        <p><b>We do not have access to your data.</b> LocalProjectsManager runs entirely in your browser, storing everything in your browser's local storage. There is <b>no server, no cloud sync, no analytics, no accounts</b> — if you clear your browser data, your projects are gone with it (export a backup first!).</p>
+      </div>
+    </div>
+
+    <h2>Everything a project manager should be — <span class="em">without the cloud</span></h2>
+    <p class="sub">Designed by <b>Sylvenson Richard</b> for <b>JRiSpace</b>, the app works offline, instantly, and never phones home.</p>
+
+    <div class="grid">
+      <div class="card"><div class="ico">📊</div><h4>Live Dashboard</h4><p>Overall completion, progress per project, donut charts and KPI cards — updated the second you tick a task.</p></div>
+      <div class="card"><div class="ico">📁</div><h4>Gallery view</h4><p>Projects shown like a desktop folder — icon view with progress bars, plus pagination for large portfolios.</p></div>
+      <div class="card"><div class="ico">🖥️</div><h4>System health</h4><p>The dashboard also shows your Mac's health: policies, background services, disk, battery and clutter.</p></div>
+      <div class="card"><div class="ico">🧩</div><h4>Phases & tasks</h4><p>Every project ships with a full phase template (intake → plan → design → build → verify → deploy → report).</p></div>
+      <div class="card"><div class="ico">📦</div><h4>Export / Import</h4><p>Backup your workspace to a JSON file and restore it anywhere — your data is always portable.</p></div>
+      <div class="card"><div class="ico">🎨</div><h4>Branded in 30s</h4><p>Setup wizard lets you name the workspace after your company — the whole UI follows.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ HOW IT WORKS ══════════ -->
+<section class="alt">
+  <div class="wrap">
+    <h2>How the app works</h2>
+    <p class="sub">Three steps to full project control — no installation required.</p>
+
+    <ol class="steps">
+      <li>
+        <div>
+          <b>Download & unzip</b>
+          <span>Click <b>⬇️ Download App</b> above — the zip is fetched from the latest GitHub release and saved to your <b>Downloads</b> folder. Unzip it anywhere (double-click in Finder).</span>
+        </div>
+      </li>
+      <li>
+        <div>
+          <b>Open the app</b>
+          <span>Double-click <code>app.html</code> — it opens in your browser and works instantly. No install, no dependencies. (You can also use <b>🚀 Open App locally</b> above, which launches the copy on this machine.)</span>
+        </div>
+      </li>
+      <li>
+        <div>
+          <b>Scan your projects</b>
+          <span>Click <b>Scan folder</b> and pick <code>~/Projects</code> — every subfolder becomes a project. Or click <b>+ New</b> to create one with the default template. Tick tasks, watch the dashboard fill up.</span>
+        </div>
+      </li>
+    </ol>
+
+    <h2 style="margin-top:44px;">Getting the latest update</h2>
+    <p class="sub">The download button always fetches the <b>latest release</b> from GitHub — click it any time and you get the newest version. It never redirects you: the fetch and download happen right here in the page.</p>
+    <div class="rel-info">
+      <div><b id="relVersion">—</b>Latest version</div>
+      <div><b id="relDate">—</b>Released</div>
+      <div><b id="relSize">—</b>Zip size</div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ FOOTER ══════════ -->
+<footer>
+  <div class="wrap">
+    <b>LocalProjectsManager</b> — Project management that respects your privacy.<br>
+    Build: JRiSpace (<a href="https://jrispace.com">jrispace.com</a>) · Author: <b>Sylvenson Richard</b> · Open source on <a href="https://github.com/jrihosting/LocalProjectsManager" id="repoLink">GitHub</a>
+  </div>
+</footer>
+
+<script>
+(function () {
+  "use strict";
+  var REPO = "jrihosting/LocalProjectsManager";
+  var API = "https://api.github.com/repos/" + REPO + "/releases/latest";
+
+  var $btn = document.getElementById("dlBtn");
+  var $status = document.getElementById("dlStatus");
+
+  /* ── Load latest release info (version / date / size) ── */
+  function loadReleaseInfo() {
+    fetch(API)
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (rel) {
+        if (!rel) return;
+        var asset = rel.assets.find(function (a) { return /\.zip$/i.test(a.name); });
+        document.getElementById("relVersion").textContent = rel.tag_name;
+        document.getElementById("relDate").textContent = (rel.published_at || "").slice(0, 10);
+        document.getElementById("relSize").textContent = asset ? fmt(asset.size) : "—";
+      })
+      .catch(function () { /* release info is decorative — fail silently */ });
+  }
+  function fmt(bytes) {
+    if (!bytes) return "—";
+    var u = ["B", "KB", "MB", "GB"], i = 0;
+    while (bytes >= 1024 && i < u.length - 1) { bytes /= 1024; i++; }
+    return bytes.toFixed(i ? 1 : 0) + " " + u[i];
+  }
+
+  /* ── Download: fetch latest release zip, save locally. NO redirect. ── */
+  function downloadApp() {
+    if ($btn.disabled) return;
+    $btn.disabled = true;
+    setStatus("⏳ Fetching latest release…", "");
+    fetch(API)
+      .then(function (r) {
+        if (!r.ok) throw new Error("Release not found (HTTP " + r.status + ")");
+        return r.json();
+      })
+      .then(function (rel) {
+        var asset = rel.assets.find(function (a) { return /\.zip$/i.test(a.name); });
+        if (!asset) throw new Error("No zip asset in the latest release");
+        setStatus("⬇️ Downloading " + asset.name + " (" + fmt(asset.size) + ")…", "");
+        return fetch(asset.browser_download_url).then(function (r) {
+          if (!r.ok) throw new Error("Download failed (HTTP " + r.status + ")");
+          return r.blob();
+        }).then(function (blob) {
+          var url = URL.createObjectURL(blob);
+          var a = document.createElement("a");
+          a.href = url;
+          a.download = asset.name;
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          setTimeout(function () { URL.revokeObjectURL(url); }, 4000);
+          setStatus("✅ " + asset.name + " downloaded — check your Downloads folder.", "ok");
+        });
+      })
+      .catch(function (e) {
+        setStatus("⚠️ " + e.message + " — check your connection and try again.", "err");
+      })
+      .finally(function () { $btn.disabled = false; });
+  }
+
+  function setStatus(msg, cls) {
+    $status.textContent = msg;
+    $status.className = "dl-status" + (cls ? " " + cls : "");
+  }
+
+  $btn.addEventListener("click", downloadApp);
+  loadReleaseInfo();
+})();
+</script>
+</body>
+</html>

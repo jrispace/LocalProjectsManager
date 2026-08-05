@@ -1,0 +1,1563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>JRiSpace Project Manager — Multi-project</title>
+<meta name="description" content="Interactive multi-project checklist — JRiSpace | Sylvenson Richard. No server needed." />
+<style>
+  :root {
+    --bg: linear-gradient(160deg, #0b1f3a 0%, #0141c2 38%, #0b63f6 68%, #38bdf8 100%);
+    --card: #ffffff;
+    --ink: #0b1f3a;
+    --muted: #64748b;
+    --brand: #0b63f6;
+    --brand-dark: #0141c2;
+    --brand-soft: #e8f0fe;
+    --done: #16a34a;
+    --done-soft: #e7f7ec;
+    --danger: #dc2626;
+    --border: #dbe3ef;
+    --radius: 14px;
+    --shadow: 0 8px 24px rgba(1, 65, 194, .18);
+    --glass: rgba(255, 255, 255, .92);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    background-attachment: fixed;
+    color: var(--ink);
+    line-height: 1.5;
+  }
+  .wrap { max-width: 1240px; margin: 0 auto; padding: 22px 18px 80px; display: flex; gap: 18px; align-items: flex-start; }
+
+  /* ── Left sidebar ───────────────────────────────────────────────────── */
+  .side {
+    width: 272px; flex-shrink: 0; position: sticky; top: 18px;
+    display: flex; flex-direction: column; gap: 16px;
+    background: rgba(8, 24, 48, .66);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(255, 255, 255, .16);
+    border-radius: 18px;
+    box-shadow: 0 14px 34px rgba(2, 24, 62, .4);
+    padding: 20px 16px;
+    color: #eaf2ff;
+    max-height: calc(100vh - 36px);
+    overflow-y: auto;
+  }
+  .side .side-brand h1 { margin: 0; font-size: 19px; letter-spacing: .2px; color: #fff; }
+  .side .side-brand h1 .v {
+    background: linear-gradient(90deg, #38bdf8, #7dd3fc, #bae6fd);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .side .side-brand .sub { color: rgba(234, 242, 255, .6); font-size: 12px; margin-top: 3px; }
+
+  .views { display: flex; flex-direction: column; gap: 8px; }
+  .views button {
+    width: 100%; text-align: left; justify-content: flex-start;
+    background: rgba(255, 255, 255, .08);
+    border: 1px solid rgba(255, 255, 255, .14);
+    color: #eaf2ff; border-radius: 11px; padding: 10px 13px; font-size: 13.5px; font-weight: 600;
+  }
+  .views button:hover { background: rgba(255, 255, 255, .16); border-color: rgba(56, 189, 248, .6); box-shadow: none; }
+  .views button.primary { background: linear-gradient(135deg, #0141c2, #0b63f6, #38bdf8); background-size: 200% 200%; border: none; color: #fff; box-shadow: 0 4px 14px rgba(56, 189, 248, .4); }
+  .views button.primary:hover { background-position: 100% 0; }
+  .views button.wiz-link { background: rgba(56, 189, 248, .12); border: 1px dashed rgba(56, 189, 248, .55); color: #d9f1ff; }
+  .views button.wiz-link:hover { background: rgba(56, 189, 248, .22); border-style: solid; }
+
+  .side-sec { display: flex; flex-direction: column; gap: 8px; }
+  .side-sec.grow { flex: 1; min-height: 0; }
+  .side-label {
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 11px; font-weight: 700; letter-spacing: .6px; text-transform: uppercase;
+    color: rgba(234, 242, 255, .62);
+  }
+  .side-sec input[type=text] {
+    width: 100%; font: inherit; padding: 9px 11px;
+    border: 1px solid rgba(255, 255, 255, .16); border-radius: 10px; outline: none;
+    background: rgba(255, 255, 255, .1); color: #eaf2ff;
+  }
+  .side-sec input[type=text]:focus { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(11, 99, 246, .25); }
+  .side-sec input[readonly] { background: rgba(11, 99, 246, .22); color: #dbeafe; font-weight: 600; cursor: default; }
+  .side-sec button.primary { width: 100%; }
+
+  #sideProjects { display: flex; flex-direction: column; gap: 7px; overflow-y: auto; }
+  .side-proj {
+    display: flex; justify-content: space-between; align-items: center; gap: 8px; width: 100%;
+    background: rgba(255, 255, 255, .07);
+    border: 1px solid rgba(255, 255, 255, .12);
+    color: #eaf2ff; border-radius: 10px; padding: 9px 12px;
+    font-size: 13px; font-weight: 600; text-align: left; cursor: pointer;
+    transition: background .12s, transform .05s;
+  }
+  .side-proj:hover { background: rgba(255, 255, 255, .14); box-shadow: none; }
+  .side-proj:active { transform: translateY(1px); }
+  .side-proj.active {
+    background: linear-gradient(135deg, #0141c2, #0b63f6, #38bdf8);
+    background-size: 200% 200%;
+    border-color: transparent; color: #fff;
+    box-shadow: 0 4px 14px rgba(56, 189, 248, .4);
+  }
+  .side-proj .sp-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .side-proj .sp-pct {
+    font-size: 11.5px; font-weight: 800; color: #a5d8ff; background: rgba(255, 255, 255, .12);
+    border-radius: 999px; padding: 2px 8px; flex-shrink: 0;
+  }
+  .side-proj.active .sp-pct { color: #fff; background: rgba(255, 255, 255, .2); }
+
+  .side-foot { margin-top: auto; display: flex; flex-wrap: wrap; gap: 7px; }
+  .side-foot button.mini { background: rgba(255, 255, 255, .08); border: 1px solid rgba(255, 255, 255, .14); color: #eaf2ff; }
+  .side-foot button.mini:hover { border-color: rgba(56, 189, 248, .6); box-shadow: none; }
+  .side-foot .badge { font-size: 10.5px; padding: 4px 10px; margin-top: 4px; }
+
+  button.mini { padding: 5px 9px; font-size: 11.5px; border-radius: 8px; }
+
+  .main { flex: 1; min-width: 0; }
+
+  header.top {
+    position: sticky; top: 10px; z-index: 30;
+    display: flex; flex-wrap: wrap; gap: 14px; align-items: center; justify-content: space-between;
+    background: rgba(255, 255, 255, .95);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, .55);
+    border-radius: var(--radius);
+    box-shadow: 0 10px 28px rgba(1, 65, 194, .22); padding: 12px 20px; margin-bottom: 14px;
+  }
+  header.top .title h1 { margin: 0; font-size: 22px; letter-spacing: .2px; }
+  header.top .title h1 .v {
+    background: linear-gradient(90deg, #0141c2, #0b63f6, #38bdf8);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  header.top .sub { color: var(--muted); font-size: 12.5px; margin-top: 2px; }
+  .badge {
+    background: linear-gradient(135deg, #0141c2, #0b63f6, #38bdf8, #22d3ee);
+    background-size: 200% 200%;
+    color: #fff; border-radius: 999px; font-size: 12px; font-weight: 600;
+    padding: 5px 12px; white-space: nowrap; letter-spacing: .3px;
+    box-shadow: 0 4px 14px rgba(56, 189, 248, .45);
+  }
+
+  button {
+    font: inherit; cursor: pointer; border: 1px solid var(--border); background: var(--card);
+    color: var(--ink); border-radius: 9px; padding: 8px 14px; font-size: 13px; font-weight: 600;
+    transition: background .15s, border-color .15s, transform .05s, box-shadow .15s;
+  }
+  button:hover { border-color: var(--brand); box-shadow: 0 4px 12px rgba(11, 99, 246, .2); }
+  button:active { transform: translateY(1px); }
+  button.primary {
+    background: linear-gradient(135deg, #0141c2, #0b63f6, #38bdf8);
+    background-size: 200% 200%;
+    border: none; color: #fff;
+    box-shadow: 0 4px 14px rgba(56, 189, 248, .4);
+  }
+  button.primary:hover { background-position: 100% 0; box-shadow: 0 6px 18px rgba(56, 189, 248, .55); }
+  button.ghost-danger:hover { border-color: var(--danger); color: var(--danger); box-shadow: 0 4px 12px rgba(220, 38, 38, .2); }
+  button.small { padding: 5px 10px; font-size: 12px; }
+
+  /* summary strip */
+  .summary {
+    display: grid; grid-template-columns: 1fr auto auto; gap: 14px; align-items: center;
+    background: var(--glass);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, .35);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow); padding: 16px 20px; margin-bottom: 18px;
+  }
+  .summary .gauge { display: flex; align-items: center; gap: 12px; min-width: 0; }
+  .summary .pct {
+    font-size: 24px; font-weight: 700;
+    background: linear-gradient(90deg, #0141c2, #0b63f6, #38bdf8);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    min-width: 54px;
+  }
+  .track { flex: 1; height: 12px; background: rgba(11, 31, 58, .1); border-radius: 999px; overflow: hidden; }
+  .track > div {
+    height: 100%; width: 0;
+    background: linear-gradient(90deg, #0141c2, #0b63f6, #38bdf8, #22d3ee);
+    background-size: 200% 200%;
+    border-radius: 999px; transition: width .25s ease;
+  }
+  .summary .counts { color: var(--muted); font-size: 13px; }
+  .actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+  /* phase cards */
+  .phase {
+    background: var(--glass);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, .35);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow); margin-bottom: 14px; overflow: hidden;
+  }
+  .phase-head {
+    display: flex; gap: 14px; align-items: center; padding: 14px 18px; cursor: pointer; user-select: none;
+    background: linear-gradient(90deg, rgba(232, 240, 254, .6), rgba(255, 255, 255, 0));
+  }
+  .phase-head:hover { background: linear-gradient(90deg, rgba(186, 216, 255, .8), rgba(255, 255, 255, 0)); }
+  .chev { color: var(--muted); font-size: 14px; width: 16px; text-align: center; transition: transform .18s; }
+  .phase.open .chev { transform: rotate(90deg); }
+  .phase-info { flex: 1; min-width: 0; }
+  .phase-name { font-weight: 700; font-size: 15.5px; }
+  .phase-desc { color: var(--muted); font-size: 12.5px; margin-top: 2px; }
+  .phase-meta { display: flex; gap: 10px; align-items: center; font-size: 12px; color: var(--muted); white-space: nowrap; }
+  .phase-meta .mini-track { width: 84px; height: 8px; background: rgba(11, 31, 58, .1); border-radius: 999px; overflow: hidden; }
+  .phase-meta .mini-track > div {
+    height: 100%;
+    background: linear-gradient(90deg, #0141c2, #38bdf8);
+    transition: width .25s;
+  }
+  .phase-meta .pchip.done { color: var(--done); font-weight: 700; }
+
+  .phase-body { padding: 0 18px 16px; display: none; }
+  .phase.open .phase-body { display: block; }
+
+  ul.tasks { list-style: none; margin: 0; padding: 0; }
+  li.task {
+    display: flex; gap: 12px; align-items: flex-start; padding: 10px 10px; border-radius: 10px;
+    margin: 4px 0; transition: background .12s;
+  }
+  li.task:hover { background: linear-gradient(90deg, rgba(232, 240, 254, .7), rgba(255, 255, 255, 0)); }
+  li.task input[type=checkbox] {
+    width: 18px; height: 18px; margin-top: 2px; accent-color: var(--brand); cursor: pointer; flex-shrink: 0;
+  }
+  li.task .t-label { flex: 1; font-size: 14px; word-break: break-word; }
+  li.task.done .t-label { color: var(--muted); text-decoration: line-through; }
+  li.task .t-notes { color: var(--muted); font-size: 12px; margin-top: 2px; }
+  li.task .t-btns { display: flex; gap: 6px; opacity: 0; transition: opacity .12s; flex-shrink: 0; }
+  li.task:hover .t-btns { opacity: 1; }
+  .t-btns button { padding: 4px 9px; font-size: 12px; border-radius: 7px; }
+  .t-btns button.edit:hover { border-color: var(--brand); }
+  .t-btns button.del:hover { border-color: var(--danger); color: var(--danger); }
+
+  .add-row { display: flex; gap: 8px; margin-top: 10px; }
+  .add-row input {
+    flex: 1; font: inherit; padding: 9px 12px; border: 1px solid var(--border); border-radius: 9px; outline: none;
+  }
+  .add-row input:focus { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(11, 99, 246, .2); }
+
+  /* modal */
+  .overlay {
+    position: fixed; inset: 0;
+    background: linear-gradient(160deg, rgba(1, 65, 194, .55), rgba(11, 31, 58, .65));
+    display: none;
+    align-items: center; justify-content: center; padding: 18px; z-index: 50;
+  }
+  .overlay.show { display: flex; }
+  .modal {
+    background: var(--card); border-radius: var(--radius); box-shadow: 0 18px 50px rgba(0, 0, 0, .35);
+    max-width: 420px; width: 100%; padding: 22px;
+  }
+  .modal h3 { margin: 0 0 6px; font-size: 17px; }
+  .modal p { color: var(--muted); font-size: 13.5px; margin: 0 0 16px; }
+  .modal textarea {
+    width: 100%; min-height: 96px; font: inherit; padding: 10px 12px; border: 1px solid var(--border);
+    border-radius: 9px; outline: none; resize: vertical;
+  }
+  .modal textarea:focus { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(11, 99, 246, .2); }
+  .modal input[type=text] {
+    width: 100%; font: inherit; padding: 9px 12px; border: 1px solid var(--border); border-radius: 9px; outline: none; margin-bottom: 12px; background: #fff; color: var(--ink);
+  }
+  .modal input[type=text]:focus { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(11, 99, 246, .2); }
+  .modal .m-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 14px; }
+
+  /* ── Dashboard ──────────────────────────────────────────────────────── */
+  .views { display: flex; gap: 8px; }
+  .dash { margin-bottom: 18px; }
+  .kpis {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 14px;
+  }
+  .kpi {
+    background: var(--glass); backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, .35); border-radius: var(--radius);
+    box-shadow: var(--shadow); padding: 16px 18px; text-align: center;
+  }
+  .kpi .k-val {
+    font-size: 30px; font-weight: 800;
+    background: linear-gradient(90deg, #0141c2, #0b63f6, #38bdf8);
+    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .kpi .k-label { color: var(--muted); font-size: 12.5px; font-weight: 600; margin-top: 4px; text-transform: uppercase; letter-spacing: .4px; }
+  .dash-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .dash-grid .card-wide { grid-column: 1 / -1; }
+  .card {
+    background: var(--glass); backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, .35); border-radius: var(--radius);
+    box-shadow: var(--shadow); padding: 18px 20px;
+  }
+  .card-title { margin: 0 0 14px; font-size: 14px; font-weight: 800; text-transform: uppercase; letter-spacing: .5px; color: var(--brand-dark); }
+  .donut-wrap { display: flex; justify-content: center; }
+  .donut { transform: rotate(-90deg); }
+  .donut-bg { fill: none; stroke: rgba(11, 31, 58, .1); stroke-width: 12; }
+  .donut-fg {
+    fill: none; stroke: url(#dashGrad); stroke-width: 12; stroke-linecap: round;
+    stroke-dasharray: 352; stroke-dashoffset: 352;
+    transition: stroke-dashoffset .6s ease;
+  }
+  .donut-txt { transform: rotate(90deg); transform-origin: 70px 70px; fill: var(--ink); font-size: 22px; font-weight: 800; }
+  .donut-legend { margin-top: 12px; text-align: center; color: var(--muted); font-size: 13px; }
+
+  .proj-bar-row { margin-bottom: 12px; }
+  .proj-bar-head { display: flex; justify-content: space-between; gap: 10px; font-size: 13px; margin-bottom: 5px; }
+  .proj-bar-head b { color: var(--ink); }
+  .proj-bar-head span { color: var(--muted); white-space: nowrap; }
+  .proj-track { height: 14px; background: rgba(11, 31, 58, .1); border-radius: 999px; overflow: hidden; }
+  .proj-track > div {
+    height: 100%;
+    background: linear-gradient(90deg, #0141c2, #0b63f6, #38bdf8, #22d3ee);
+    background-size: 200% 200%;
+    border-radius: 999px; transition: width .4s ease;
+  }
+  .pager { display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 8px; }
+  .pager .pager-info { color: var(--muted); font-size: 12px; font-weight: 700; letter-spacing: .2px; }
+  .pager button:disabled { opacity: .4; cursor: default; box-shadow: none; }
+
+  .rep { border: 1px solid var(--border); border-radius: 10px; margin-bottom: 10px; overflow: hidden; }
+  .rep-head {
+    display: flex; justify-content: space-between; gap: 10px; align-items: center;
+    padding: 10px 14px; cursor: pointer; background: linear-gradient(90deg, rgba(232, 240, 254, .6), rgba(255, 255, 255, 0));
+  }
+  .rep-head:hover { background: linear-gradient(90deg, rgba(186, 216, 255, .8), rgba(255, 255, 255, 0)); }
+  .rep-head b { font-size: 13.5px; }
+  .rep-head .rep-pct { color: var(--brand-dark); font-weight: 800; font-size: 13px; }
+  .rep-body { display: none; padding: 10px 14px; }
+  .rep.open .rep-body { display: block; }
+  .rep-body table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  .rep-body th, .rep-body td { text-align: left; padding: 6px 8px; border-bottom: 1px solid rgba(219, 227, 239, .8); }
+  .rep-body th { color: var(--muted); font-weight: 700; text-transform: uppercase; font-size: 11px; letter-spacing: .3px; }
+  .rep-body tr:last-child td { border-bottom: none; }
+  .rep-mini { height: 8px; background: rgba(11, 31, 58, .1); border-radius: 999px; overflow: hidden; min-width: 60px; }
+  .rep-mini > div { height: 100%; background: linear-gradient(90deg, #0141c2, #38bdf8); }
+  .rep-actions { margin-top: 8px; text-align: right; }
+
+  /* ── Project Reports — Gallery (icon view) ─────────────────────────── */
+  .gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 12px;
+  }
+  .g-item {
+    background: #f8fafc;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 10px 12px;
+    text-align: center;
+    cursor: pointer;
+    transition: transform .12s ease, box-shadow .12s ease, border-color .12s ease;
+    display: flex; flex-direction: column; align-items: center; gap: 6px;
+    min-width: 0;
+  }
+  .g-item:hover {
+    transform: translateY(-3px);
+    border-color: rgba(11, 99, 246, .55);
+    box-shadow: 0 8px 20px rgba(1, 65, 194, .18);
+  }
+  .g-ico {
+    font-size: 34px; line-height: 1;
+    filter: drop-shadow(0 2px 3px rgba(1, 65, 194, .25));
+  }
+  .g-name {
+    font-size: 12.5px; font-weight: 700; color: var(--ink);
+    max-width: 100%;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    display: block;
+  }
+  .g-pct { font-size: 11.5px; font-weight: 700; color: var(--brand); }
+  .g-track { width: 100%; height: 6px; background: rgba(11, 31, 58, .1); border-radius: 999px; overflow: hidden; }
+  .g-track > div { height: 100%; background: linear-gradient(90deg, #0141c2, #38bdf8); border-radius: 999px; }
+  .g-item.done { border-color: rgba(22, 163, 74, .45); background: #f0fdf4; }
+  .g-item.done .g-ico { filter: drop-shadow(0 2px 3px rgba(22, 163, 74, .35)); }
+  .g-item.done .g-pct { color: #16a34a; }
+
+  /* ── System Health card ────────────────────────────────────────────── */
+  .health-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .health-col { display: flex; flex-direction: column; gap: 8px; }
+  .health-label { font-size: 11px; font-weight: 700; letter-spacing: .5px; text-transform: uppercase; color: var(--muted); }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 12px; font-weight: 600; padding: 4px 10px;
+    border-radius: 999px; border: 1px solid var(--border); background: var(--brand-soft); color: var(--ink);
+  }
+  .chip-ok { background: var(--done-soft); border-color: rgba(22, 163, 74, .3); color: #15803d; }
+  .chip-warn { background: #fef3c7; border-color: rgba(245, 158, 11, .4); color: #b45309; }
+  .chip-bad { background: #fee2e2; border-color: rgba(220, 38, 38, .35); color: #b91c1c; }
+  @media (max-width: 860px) { .health-grid { grid-template-columns: 1fr; } }
+
+  /* ── Launch wizard ──────────────────────────────────────────────────── */
+  .wizard {
+    position: fixed; inset: 0; z-index: 70;
+    background: linear-gradient(160deg, rgba(1, 65, 194, .78), rgba(11, 31, 58, .86));
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    display: none; align-items: center; justify-content: center; padding: 18px;
+  }
+  .wizard.open { display: flex; }
+  .wizard-card {
+    background: var(--card); border-radius: 22px; max-width: 460px; width: 100%;
+    padding: 30px 28px 22px; box-shadow: 0 24px 70px rgba(0, 0, 0, .45); text-align: center;
+    animation: wizIn .28s ease;
+  }
+  @keyframes wizIn { from { transform: translateY(16px); opacity: 0; } to { transform: none; opacity: 1; } }
+  .wizard-card .wiz-logo { font-size: 15px; font-weight: 800; letter-spacing: .4px; color: var(--brand-dark); }
+  .wizard-card .wiz-logo .wiz-logo-sub { color: var(--muted); font-weight: 700; }
+  .wizard-card h2 { margin: 10px 0 8px; font-size: 21px; }
+  .wizard-card p { color: var(--muted); font-size: 13.5px; margin: 0 0 20px; }
+  .wizard-card input[type=text] {
+    width: 100%; font: inherit; padding: 11px 14px; border: 1px solid var(--border); border-radius: 10px;
+    font-size: 15px; outline: none; margin-bottom: 16px; text-align: center; font-weight: 600; color: var(--ink);
+  }
+  .wizard-card input[type=text]:focus { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(11, 99, 246, .2); }
+  .wiz-root {
+    display: inline-flex; align-items: center; gap: 8px; max-width: 100%;
+    background: var(--brand-soft); color: var(--brand-dark); font-weight: 700; font-size: 13.5px;
+    border-radius: 999px; padding: 9px 16px; margin-bottom: 12px; word-break: break-all;
+  }
+  .wiz-root-info { color: var(--done); font-size: 12.5px; font-weight: 600; min-height: 18px; margin-bottom: 8px; }
+  .wiz-root-info.err { color: var(--danger); }
+  .wiz-nav { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+  .wiz-dots { display: flex; gap: 6px; justify-content: center; margin-top: 20px; }
+  .wiz-dots span { width: 8px; height: 8px; border-radius: 50%; background: #cbd5e1; transition: width .2s, background .2s; }
+  .wiz-dots span.on { width: 22px; border-radius: 999px; background: var(--brand); }
+  .wiz-skip { margin-top: 14px; }
+  button.linky { background: none; border: none; color: var(--muted); font-size: 12.5px; padding: 4px 10px; }
+  button.linky:hover { color: var(--brand); box-shadow: none; border: none; }
+
+  footer { text-align: center; color: var(--muted); font-size: 12px; margin-top: 34px; }
+  footer b { color: var(--ink); }
+  .toast {
+    position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%) translateY(20px);
+    background: var(--ink); color: #fff; padding: 10px 18px; border-radius: 10px; font-size: 13px;
+    opacity: 0; pointer-events: none; transition: opacity .2s, transform .2s; z-index: 60; max-width: 90vw; text-align: center;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  @media (max-width: 900px) {
+    .wrap { flex-direction: column; }
+    .side { width: 100%; position: static; max-height: none; }
+    #sideProjects { flex-direction: row; flex-wrap: wrap; }
+    .side-proj { width: auto; flex: 1 1 200px; }
+    .side-foot { flex-wrap: wrap; }
+  }
+  @media (max-width: 640px) {
+    .summary { grid-template-columns: 1fr; }
+    .phase-meta { flex-wrap: wrap; }
+    li.task .t-btns { opacity: 1; }
+    .dash-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <aside class="side">
+      <div class="side-brand">
+        <h1><span data-brand="company">JRiSpace</span> <span class="v">Project Manager</span></h1>
+        <div class="sub">Dashboard & checklist for all your projects</div>
+      </div>
+
+      <nav class="views" id="viewNav">
+        <button id="btnViewDashboard">📊 Dashboard</button>
+        <button id="btnViewChecklist">✓ Checklist</button>
+        <button id="btnViewWizard" class="wiz-link" title="Re-open the setup wizard (branding + root folder)">🚀 Setup wizard</button>
+      </nav>
+
+      <div class="side-sec">
+        <div class="side-label">📁 Root</div>
+        <input type="text" id="folderInput" value="~/Projects" placeholder="~/Projects" readonly title="Root is set automatically by “Scan folder” — click the button to open the folder picker." />
+        <button id="btnScanFolder" class="primary" title="Open the system folder picker (Finder on macOS / Explorer on Windows) and import every subproject's checklist.json">Scan folder</button>
+      </div>
+
+      <div class="side-sec grow">
+        <div class="side-label">
+          <span>🚀 Projects</span>
+          <button id="btnNewProject" class="mini primary" title="Add a new project with the default template">+ New</button>
+        </div>
+        <div id="sideProjects"></div>
+      </div>
+
+      <div class="side-foot">
+        <button id="btnSettings" class="mini" title="Re-open the launch wizard to change the company name">⚙ Brand</button>
+        <button id="btnRenameProject" class="mini" title="Rename the current project">Rename</button>
+        <button id="btnDeleteProject" class="mini ghost-danger" title="Delete the current project (localStorage only)">Delete</button>
+        <div class="badge" id="sideBadge">v2.3 · JRiSpace | Sylvenson Richard</div>
+      </div>
+    </aside>
+
+    <div class="main">
+      <header class="top">
+        <div class="title">
+          <h1><span class="v" id="headProject">—</span></h1>
+          <div class="sub">Interactive multi-project dashboard &amp; checklist · no server needed · saves automatically</div>
+        </div>
+      </header>
+
+      <div class="summary" id="summaryBar">
+      <div class="gauge">
+        <div class="pct" id="globalPct">0%</div>
+        <div class="track"><div id="globalTrack"></div></div>
+      </div>
+      <div class="counts" id="globalCounts">0 / 0 tasks</div>
+      <div class="actions">
+        <button id="btnExport" title="Download this project's checklist as JSON">Export</button>
+        <button id="btnImport" title="Load a checklist JSON file into this project">Import</button>
+        <button id="btnAddPhase" class="primary" title="Add a new phase to this project">+ Phase</button>
+        <button id="btnReset" class="ghost-danger" title="Reset this project to the default template">Reset</button>
+      </div>
+    </div>
+
+    <!-- ══════════ DASHBOARD — charts & reports for ALL projects ══════════ -->
+    <section class="dash" id="dashboard" hidden>
+      <div class="kpis" id="dashKpis"></div>
+      <div class="dash-grid">
+        <div class="card">
+          <h3 class="card-title">Overall Completion</h3>
+          <div class="donut-wrap">
+            <svg class="donut" id="donutSvg" viewBox="0 0 140 140" width="170" height="170">
+              <defs>
+                <linearGradient id="dashGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#0141c2"></stop>
+                  <stop offset="55%" stop-color="#0b63f6"></stop>
+                  <stop offset="100%" stop-color="#22d3ee"></stop>
+                </linearGradient>
+              </defs>
+              <circle class="donut-bg" cx="70" cy="70" r="56"></circle>
+              <circle class="donut-fg" id="donutFg" cx="70" cy="70" r="56"></circle>
+              <text class="donut-txt" id="donutTxt" x="70" y="76" text-anchor="middle">0%</text>
+            </svg>
+          </div>
+          <div class="donut-legend" id="donutLegend"></div>
+        </div>
+        <div class="card">
+          <h3 class="card-title">Progress by Project</h3>
+          <div id="projBars"></div>
+        </div>
+        <div class="card card-wide">
+          <h3 class="card-title">Project Reports</h3>
+          <div id="dashReports"></div>
+          <div class="rep-actions">
+            <button id="btnCopyReport" class="primary small">📋 Copy report (markdown)</button>
+          </div>
+        </div>
+        <div class="card card-wide" id="healthCard" style="border:1px solid rgba(56,189,248,.35);">
+          <h3 class="card-title">🖥️ System Health <span id="healthStamp" style="font-size:11px;font-weight:500;color:var(--muted);"></span></h3>
+          <div id="healthBody">
+            <p style="color:var(--muted);font-size:13px;">Chargement… (si sa rete, kouri <code>~/scripts/ai-self-review.sh</code>)</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <main id="phases"></main>
+
+    <footer>
+      Auto-saved to <b>localStorage</b> · one checklist per project · open with any browser, no server needed.<br />
+      Build: <b data-brand="company">JRiSpace</b> (`<span data-brand="website">jrispace.com</span>`) · Author: <b data-brand="author">Sylvenson Richard</b> · License: template for <span data-brand="company">JRiSpace</span> projects
+    </footer>
+    </div><!-- /.main -->
+  </div>
+
+  <input type="file" id="fileInput" accept="application/json" style="display:none" />
+
+  <div class="overlay" id="overlay">
+    <div class="modal" id="modalBox"></div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <!-- ══════════ LAUNCH WIZARD — company branding setup ══════════ -->
+  <div class="wizard" id="launchWizard">
+    <div class="wizard-card">
+      <div class="wiz-logo">🚀 <span id="wizBrandPrev">JRiSpace</span> <span class="wiz-logo-sub">Project Manager</span></div>
+
+      <div class="wiz-step" id="wizStep1">
+        <h2>Welcome to your Project Manager</h2>
+        <p>Track every project, phase and task in one place — with a dashboard, charts and reports. Let's brand it for your company in under 30 seconds.</p>
+        <button id="wizNext1" class="primary" style="width:100%;padding:12px;">Get started →</button>
+      </div>
+
+      <div class="wiz-step" id="wizStep2" style="display:none;">
+        <h2>Name your company</h2>
+        <p>This replaces “JRiSpace” everywhere in the app — header, footer, badge and reports.</p>
+        <input type="text" id="wizCompany" maxlength="40" placeholder="e.g. JRiSpace" autocomplete="off" />
+        <div class="wiz-nav">
+          <button id="wizBack">← Back</button>
+          <button id="wizFinish" class="primary">Next: Root folder →</button>
+        </div>
+      </div>
+
+      <div class="wiz-step" id="wizStep3" style="display:none;">
+        <h2>Pick your Root folder</h2>
+        <p>Optional — choose the folder that contains all your projects. Its subfolders become projects. You can always do this later from the sidebar.</p>
+        <div class="wiz-root" id="wizRootPrev">📁 ~/Projects</div>
+        <div class="wiz-root-info" id="wizRootInfo"></div>
+        <div class="wiz-nav">
+          <button id="wizBack3">← Back</button>
+          <button id="wizScan" class="primary">📁 Scan folder</button>
+          <button id="wizContinue" class="primary">Continue →</button>
+        </div>
+      </div>
+
+      <div class="wiz-step" id="wizStep4" style="display:none;">
+        <h2>You're all set</h2>
+        <p id="wizDoneMsg">Your workspace is now branded for your company.</p>
+        <button id="wizClose" class="primary" style="width:100%;padding:12px;">Start using the app →</button>
+      </div>
+
+      <div class="wiz-dots"><span id="wizDot1" class="on"></span><span id="wizDot2"></span><span id="wizDot3"></span><span id="wizDot4"></span></div>
+      <div class="wiz-skip"><button id="wizSkip" class="linky">Skip for now</button></div>
+    </div>
+  </div>
+
+  <!-- System health data — auto-generated by ~/scripts/ai-self-review.sh -->
+  <script src="file:///Users/ing.sylvensonrichard/.hermes/logs/self-review/system-health.js"></script>
+
+<script>
+(function () {
+  "use strict";
+
+  var STORAGE_REGISTRY = "jrispace.projects.v2";
+  var STORAGE_CHECK = "jrispace.checklist.v2.";
+  var LEGACY_KEY = "jrispace.checklist.v1";
+
+  /* ── Default template: shared phases used by every new project ─────── */
+  var DEFAULT_PHASES = [
+    { name: "Project Intake", desc: "Requirements gate — goal, audience, features, budget, timeline." },
+    { name: "Plan & Architecture", desc: "Monorepo, apps, shared packages, plugin system, docs." },
+    { name: "Design", desc: "Branding, UI kits, i18n content across languages." },
+    { name: "Build — Apps", desc: "Next.js portals, admin, docs, landing, functions." },
+    { name: "Firebase & Auth", desc: "Firestore, rules, indexes, Clerk auth, media storage." },
+    { name: "Verify & QA", desc: "Build, typecheck, verify gate, tests." },
+    { name: "Deploy", desc: "Firebase App Hosting backends, rollouts, DNS." },
+    { name: "Document & Report", desc: "Docs, changelog, signatures." }
+  ];
+
+  /* Default checklist template (seeded on first run, usable by any project) */
+  var DEFAULT_DATA = {
+    project: null, /* replaced with project name */
+    version: "1.0",
+    updatedAt: null,
+    phases: DEFAULT_PHASES.map(function (p) {
+      var tasks = [];
+      if (p.name === "Project Intake") {
+        tasks = [
+          { text: "Define primary business goal & success metrics", done: true },
+          { text: "Identify target user / client audience", done: true },
+          { text: "List must-have vs nice-to-have features", done: false, notes: "See project plan" },
+          { text: "Confirm budget range & hosting choice", done: false },
+          { text: "Record deadline / launch date", done: false },
+          { text: "Record answers in the project plan (PRD)", done: false }
+        ];
+      } else if (p.name === "Plan & Architecture") {
+        tasks = [
+          { text: "Set up monorepo (workspaces + turbo)", done: false },
+          { text: "Define apps and shared packages", done: false },
+          { text: "Document architecture", done: false },
+          { text: "Write ADRs for major technical decisions", done: false }
+        ];
+      } else if (p.name === "Design") {
+        tasks = [
+          { text: "Apply JRiSpace branding (colors, typography, logo)", done: false },
+          { text: "Build shared UI components", done: false },
+          { text: "Prepare translations (EN / FR / HT / ES)", done: false },
+          { text: "Certificate / badge visual assets", done: false },
+          { text: "Accessibility & responsive audit (WCAG)", done: false }
+        ];
+      } else if (p.name === "Build — Apps") {
+        tasks = [
+          { text: "Build main portal", done: false },
+          { text: "Build language variants", done: false },
+          { text: "Build admin / backend", done: false },
+          { text: "Build support services / functions", done: false }
+        ];
+      } else if (p.name === "Firebase & Auth") {
+        tasks = [
+          { text: "Configure Firestore rules & indexes", done: false },
+          { text: "Wire auth (Clerk)", done: false },
+          { text: "Storage buckets & CORS", done: false }
+        ];
+      } else if (p.name === "Verify & QA") {
+        tasks = [
+          { text: "Run production build", done: false },
+          { text: "Run typecheck (tsc --noEmit)", done: false },
+          { text: "Run ~/scripts/ai-code-verify.sh", done: false },
+          { text: "Write & pass tests", done: false },
+          { text: "Manual QA in browser", done: false }
+        ];
+      } else if (p.name === "Deploy") {
+        tasks = [
+          { text: "Configure deployment config (apphosting.yaml)", done: false },
+          { text: "Deploy backends", done: false },
+          { text: "Push to remotes to trigger rollouts", done: false },
+          { text: "Verify live sites + DNS", done: false }
+        ];
+      } else {
+        tasks = [
+          { text: "Update project documentation", done: false },
+          { text: "Write CHANGELOG", done: false },
+          { text: "Mark deliverables with JRiSpace / Sylvenson Richard signature", done: false },
+          { text: "Final report: what works, what was fixed, what needs attention", done: false }
+        ];
+      }
+      return { name: p.name, desc: p.desc, tasks: tasks };
+    })
+  };
+
+  /* ── Registry & current project ─────────────────────────────────────── */
+  var registry = loadRegistry();
+  var current = null; /* { key, name } */
+
+  /* ── DOM refs ───────────────────────────────────────────────────────── */
+  var $phases = document.getElementById("phases");
+  var $pct = document.getElementById("globalPct");
+  var $track = document.getElementById("globalTrack");
+  var $counts = document.getElementById("globalCounts");
+  var $overlay = document.getElementById("overlay");
+  var $modal = document.getElementById("modalBox");
+  var $toast = document.getElementById("toast");
+  var $fileInput = document.getElementById("fileInput");
+  var $folderInput = document.getElementById("folderInput");
+
+  var toastTimer = null;
+
+  /* ── Helpers ────────────────────────────────────────────────────────── */
+  function loadRegistry() {
+    try {
+      var raw = localStorage.getItem(STORAGE_REGISTRY);
+      if (raw) {
+        var r = JSON.parse(raw);
+        if (r && Array.isArray(r.projects)) return r;
+      }
+    } catch (e) {}
+    return { folder: "~/Projects", projects: [] };
+  }
+  function saveRegistry() {
+    try { localStorage.setItem(STORAGE_REGISTRY, JSON.stringify(registry)); }
+    catch (e) { showToast("Save failed: " + (e && e.message ? e.message : e)); }
+  }
+  function dataKey(key) { return STORAGE_CHECK + key; }
+  function slug(s) {
+    return String(s || "project").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "project";
+  }
+  function scaffold(name) {
+    var data = deepClone(DEFAULT_DATA);
+    data.project = name;
+    data.updatedAt = new Date().toISOString();
+    return data;
+  }
+  function loadProjectData(key, name) {
+    try {
+      var raw = localStorage.getItem(dataKey(key));
+      if (raw) {
+        var d = JSON.parse(raw);
+        if (d && Array.isArray(d.phases)) { d.project = d.project || name; return d; }
+      }
+    } catch (e) {}
+    return scaffold(name);
+  }
+  function saveCurrent() {
+    if (!current) return;
+    current.data.updatedAt = new Date().toISOString();
+    current.data.project = current.name;
+    try { localStorage.setItem(dataKey(current.key), JSON.stringify(current.data)); }
+    catch (e) { showToast("Save failed: " + (e && e.message ? e.message : e)); }
+  }
+  function deepClone(obj) { return JSON.parse(JSON.stringify(obj)); }
+  function esc(s) {
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+  function findProject(key) {
+    for (var i = 0; i < registry.projects.length; i++) {
+      if (registry.projects[i].key === key) return registry.projects[i];
+    }
+    return null;
+  }
+
+  /* ── Non default pwojè a — DINAMIK: si wizard la rename konpayi an, tout
+     referans "GloryPlatform" default yo pran non sa a. ──────────────── */
+  function defaultProjectName() {
+    var c = config && config.company;
+    return (c && c !== "JRiSpace") ? c : "GloryPlatform";
+  }
+  function defaultProjectKey() { return slug(defaultProjectName()); }
+
+  /* ── Migration: legacy single-project data → default project ───────── */
+  function migrateLegacyIfNeeded() {
+    if (registry.projects.length > 0) return;
+    try {
+      var raw = localStorage.getItem(LEGACY_KEY);
+      if (raw) {
+        var d = JSON.parse(raw);
+        if (d && Array.isArray(d.phases)) {
+          d.project = d.project || defaultProjectName();
+          var key = slug(d.project);
+          var p = { key: key, name: d.project };
+          if (!findProject(key)) registry.projects.push(p);
+          localStorage.setItem(dataKey(key), JSON.stringify(d));
+          localStorage.removeItem(LEGACY_KEY);
+          return;
+        }
+      }
+    } catch (e) {}
+    /* no legacy data → default project */
+    var gp = { key: defaultProjectKey(), name: defaultProjectName() };
+    registry.projects.push(gp);
+    localStorage.setItem(dataKey(gp.key), JSON.stringify(scaffold(gp.name)));
+    saveRegistry();
+  }
+
+  /* ── Progress ───────────────────────────────────────────────────────── */
+  function phaseProgress(phase) {
+    var t = phase.tasks.length;
+    var d = phase.tasks.filter(function (x) { return x.done; }).length;
+    return { total: t, done: d, pct: t ? Math.round(d / t * 100) : 0 };
+  }
+  function globalProgress() {
+    var t = 0, d = 0;
+    if (!current) return { total: 0, done: 0, pct: 0 };
+    current.data.phases.forEach(function (p) { t += p.tasks.length; d += p.tasks.filter(function (x) { return x.done; }).length; });
+    return { total: t, done: d, pct: t ? Math.round(d / t * 100) : 0 };
+  }
+
+  /* ── Render ─────────────────────────────────────────────────────────── */
+  function renderSidebar() {
+    var html = registry.projects.map(function (p) {
+      var stats = projectStats(p);
+      var active = current && p.key === current.key ? " active" : "";
+      return '<button class="side-proj' + active + '" data-key="' + esc(p.key) + '">' +
+        '<span class="sp-name">' + esc(p.name) + '</span>' +
+        '<span class="sp-pct">' + stats.pct + '%</span>' +
+      '</button>';
+    }).join("") || '<div class="side-proj" style="cursor:default;opacity:.7;">(no projects)</div>';
+    document.getElementById("sideProjects").innerHTML = html;
+    $folderInput.value = registry.folder || "~/Projects";
+  }
+
+  function renderPhases() {
+    $phases.innerHTML = "";
+    if (!current || !current.data.phases.length) {
+      $phases.innerHTML = '<div class="phase"><div class="phase-head"><div class="phase-info"><div class="phase-name">No phases yet</div><div class="phase-desc">Use “+ Phase” or “+ New project” to get started.</div></div></div></div>';
+      return;
+    }
+    current.data.phases.forEach(function (phase, pi) {
+      var prog = phaseProgress(phase);
+      var open = phase._open !== false;
+      var card = document.createElement("section");
+      card.className = "phase" + (open ? " open" : "");
+
+      var head = document.createElement("div");
+      head.className = "phase-head";
+      head.innerHTML =
+        '<span class="chev">▶</span>' +
+        '<div class="phase-info">' +
+          '<div class="phase-name">' + esc(phase.name || "Phase " + (pi + 1)) + '</div>' +
+          (phase.desc ? '<div class="phase-desc">' + esc(phase.desc) + '</div>' : "") +
+        '</div>' +
+        '<div class="phase-meta">' +
+          '<div class="mini-track"><div style="width:' + prog.pct + '%"></div></div>' +
+          '<span class="pchip' + (prog.done && prog.done === prog.total ? ' done' : '') + '">' + prog.done + '/' + prog.total + ' · ' + prog.pct + '%</span>' +
+        '</div>';
+      head.addEventListener("click", function () {
+        phase._open = phase._open === false ? true : false;
+        saveCurrent(); renderPhases();
+      });
+      card.appendChild(head);
+
+      var body = document.createElement("div");
+      body.className = "phase-body";
+
+      var ul = document.createElement("ul");
+      ul.className = "tasks";
+      phase.tasks.forEach(function (task, ti) {
+        var li = document.createElement("li");
+        li.className = "task" + (task.done ? " done" : "");
+
+        var cb = document.createElement("input");
+        cb.type = "checkbox";
+        cb.checked = !!task.done;
+        cb.addEventListener("change", function () { task.done = cb.checked; saveCurrent(); renderPhases(); });
+
+        var label = document.createElement("div");
+        label.className = "t-label";
+        label.textContent = task.text || "";
+        if (task.notes) {
+          var n = document.createElement("div");
+          n.className = "t-notes";
+          n.textContent = task.notes;
+          label.appendChild(n);
+        }
+
+        var btns = document.createElement("div");
+        btns.className = "t-btns";
+        var btnEdit = document.createElement("button");
+        btnEdit.className = "edit"; btnEdit.textContent = "Edit";
+        btnEdit.addEventListener("click", function () { openTaskModal(pi, ti); });
+        var btnDel = document.createElement("button");
+        btnDel.className = "del"; btnDel.textContent = "✕";
+        btnDel.title = "Delete task";
+        btnDel.addEventListener("click", function () {
+          phase.tasks.splice(ti, 1); saveCurrent(); renderPhases();
+        });
+        btns.appendChild(btnEdit);
+        btns.appendChild(btnDel);
+
+        li.appendChild(cb);
+        li.appendChild(label);
+        li.appendChild(btns);
+        ul.appendChild(li);
+      });
+      body.appendChild(ul);
+
+      var row = document.createElement("div");
+      row.className = "add-row";
+      var input = document.createElement("input");
+      input.placeholder = "Add a task to \"" + esc(phase.name) + "\"…";
+      var addBtn = document.createElement("button");
+      addBtn.textContent = "Add";
+      addBtn.className = "primary";
+      function doAdd() {
+        var v = input.value.trim();
+        if (!v) return;
+        phase.tasks.push({ text: v, done: false });
+        input.value = ""; saveCurrent(); renderPhases();
+      }
+      addBtn.addEventListener("click", doAdd);
+      input.addEventListener("keydown", function (e) {
+        if (e.key === "Enter") { e.preventDefault(); doAdd(); }
+      });
+      row.appendChild(input);
+      row.appendChild(addBtn);
+      body.appendChild(row);
+
+      var delPhase = document.createElement("div");
+      delPhase.style.cssText = "text-align:right;margin-top:8px;";
+      var delBtn = document.createElement("button");
+      delBtn.className = "ghost-danger"; delBtn.textContent = "Delete phase";
+      delBtn.addEventListener("click", function (e) {
+        e.stopPropagation();
+        if (confirm('Delete phase "' + phase.name + '" and all its tasks?')) {
+          current.data.phases.splice(pi, 1); saveCurrent(); renderPhases();
+        }
+      });
+      delPhase.appendChild(delBtn);
+      body.appendChild(delPhase);
+
+      card.appendChild(body);
+      $phases.appendChild(card);
+    });
+
+    var g = globalProgress();
+    $pct.textContent = g.pct + "%";
+    $track.style.width = g.pct + "%";
+    $counts.textContent = g.done + " / " + g.total + " tasks";
+  }
+
+  function renderAll() {
+    var $head = document.getElementById("headProject");
+    if ($head) $head.textContent = current ? current.name : "—";
+    renderSidebar();
+    renderPhases();
+  }
+
+  /* ── Project switching ──────────────────────────────────────────────── */
+  function switchTo(key) {
+    var p = findProject(key);
+    if (!p) {
+      if (registry.projects.length) p = registry.projects[0];
+      else { p = { key: defaultProjectKey(), name: defaultProjectName() }; registry.projects.push(p); saveRegistry(); }
+    }
+    p.data = loadProjectData(p.key, p.name);
+    current = p;
+    renderAll();
+  }
+
+  document.getElementById("sideProjects").addEventListener("click", function (e) {
+    var btn = e.target.closest(".side-proj");
+    if (btn && btn.dataset.key) switchTo(btn.dataset.key);
+  });
+
+  /* ── Modal (add/edit task) ──────────────────────────────────────────── */
+  function openTaskModal(pi, ti) {
+    var task = ti == null ? null : current.data.phases[pi].tasks[ti];
+    var phaseNames = current.data.phases.map(function (p) { return p.name; });
+    $modal.innerHTML =
+      '<h3>' + (task ? "Edit task" : "Add task") + '</h3>' +
+      '<label style="font-size:12.5px;color:var(--muted);display:block;margin-bottom:4px;">Phase</label>' +
+      '<select id="mPhase" style="width:100%;font:inherit;padding:9px 12px;border:1px solid var(--border);border-radius:9px;outline:none;margin-bottom:12px;background:#fff;">' +
+        phaseNames.map(function (n, i) { return '<option value="' + i + '"' + (i === pi ? " selected" : "") + '>' + esc(n) + '</option>'; }).join("") +
+      '</select>' +
+      '<label style="font-size:12.5px;color:var(--muted);display:block;margin-bottom:4px;">Task</label>' +
+      '<input id="mText" type="text" value="' + (task ? esc(task.text) : "") + '" placeholder="Task description" />' +
+      '<label style="font-size:12.5px;color:var(--muted);display:block;margin-bottom:4px;">Notes (optional)</label>' +
+      '<textarea id="mNotes" placeholder="Optional notes…">' + (task && task.notes ? esc(task.notes) : "") + '</textarea>' +
+      '<div class="m-actions">' +
+        '<button id="mCancel">Cancel</button>' +
+        '<button id="mSave" class="primary">Save</button>' +
+      '</div>';
+    $overlay.classList.add("show");
+    var $text = document.getElementById("mText");
+    function closeModal() { $overlay.classList.remove("show"); }
+    document.getElementById("mCancel").addEventListener("click", closeModal);
+    $overlay.addEventListener("click", function (e) { if (e.target === $overlay) closeModal(); });
+    document.getElementById("mSave").addEventListener("click", function () {
+      var v = $text.value.trim();
+      if (!v) { $text.focus(); return; }
+      var pIdx = parseInt(document.getElementById("mPhase").value, 10);
+      var notes = document.getElementById("mNotes").value.trim() || undefined;
+      if (task) { task.text = v; task.notes = notes; }
+      else { current.data.phases[pIdx].tasks.push({ text: v, done: false, notes: notes }); }
+      saveCurrent(); closeModal(); renderPhases();
+    });
+    $text.addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); document.getElementById("mSave").click(); } });
+    setTimeout(function () { $text.focus(); $text.select(); }, 30);
+  }
+
+  function openNameModal(kind) {
+    var isNew = kind === "new";
+    $modal.innerHTML =
+      '<h3>' + (isNew ? "New project" : "Rename project") + '</h3>' +
+      '<p>' + (isNew
+        ? "Create a new project with the default JRiSpace checklist template."
+        : "Change the display name of \"" + esc(current ? current.name : "") + "\".") + '</p>' +
+      '<label style="font-size:12.5px;color:var(--muted);display:block;margin-bottom:4px;">Project name</label>' +
+      '<input id="mName" type="text" value="' + (isNew ? "" : esc(current ? current.name : "")) + '" placeholder="e.g. ' + defaultProjectName() + '" />' +
+      '<div class="m-actions">' +
+        '<button id="mCancel">Cancel</button>' +
+        '<button id="mSave" class="primary">' + (isNew ? "Create" : "Save") + '</button>' +
+      '</div>';
+    $overlay.classList.add("show");
+    var $name = document.getElementById("mName");
+    function closeModal() { $overlay.classList.remove("show"); }
+    document.getElementById("mCancel").addEventListener("click", closeModal);
+    $overlay.addEventListener("click", function (e) { if (e.target === $overlay) closeModal(); });
+    document.getElementById("mSave").addEventListener("click", function () {
+      var v = $name.value.trim();
+      if (!v) { $name.focus(); return; }
+      if (isNew) {
+        var key = slug(v);
+        var suffix = 2;
+        while (findProject(key)) key = slug(v) + "-" + (suffix++);
+        var p = { key: key, name: v };
+        registry.projects.push(p);
+        saveRegistry();
+        switchTo(key);
+      } else {
+        current.name = v;
+        saveRegistry();
+        saveCurrent();
+        renderSidebar();
+      }
+      closeModal();
+      showToast(isNew ? 'Project "' + v + '" created' : 'Project renamed to "' + v + '"');
+    });
+    $name.addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); document.getElementById("mSave").click(); } });
+    setTimeout(function () { $name.focus(); $name.select(); }, 30);
+  }
+
+  /* ── Buttons ────────────────────────────────────────────────────────── */
+  document.getElementById("btnNewProject").addEventListener("click", function () { openNameModal("new"); });
+  document.getElementById("btnRenameProject").addEventListener("click", function () { openNameModal("rename"); });
+
+  document.getElementById("btnDeleteProject").addEventListener("click", function () {
+    if (!current) return;
+    if (!confirm('Delete project "' + current.name + '"?\n\nThis removes its checklist data from this browser.')) return;
+    localStorage.removeItem(dataKey(current.key));
+    var idx = -1;
+    for (var i = 0; i < registry.projects.length; i++) if (registry.projects[i].key === current.key) idx = i;
+    if (idx >= 0) registry.projects.splice(idx, 1);
+    saveRegistry();
+    current = null;
+    if (registry.projects.length) switchTo(registry.projects[0].key);
+    else { migrateLegacyIfNeeded(); switchTo(registry.projects[0].key); }
+    showToast("Project deleted");
+  });
+
+  /* Scan a folder: import every subproject (reads each folder's checklist.json) */
+  /* Shared folder scan — used by the sidebar button AND the wizard */
+  async function runScan() {
+    if (!window.showDirectoryPicker) {
+      showToast("Folder scanning needs Chrome/Edge. Otherwise use “+ New project” manually.");
+      return false;
+    }
+    var dir;
+    try { dir = await window.showDirectoryPicker({ mode: "read" }); }
+    catch (e) { return false; } /* user cancelled */
+    var created = 0, loaded = 0;
+    try {
+      for await (var sub of dir.values()) {
+        if (sub.kind !== "directory") continue;
+        var key = slug(sub.name);
+        if (!findProject(key)) {
+          registry.projects.push({ key: key, name: sub.name });
+          created++;
+        }
+        /* try to read a checklist.json inside the subproject */
+        try {
+          for await (var f of sub.values()) {
+            if (f.kind !== "file") continue;
+            var name = String(f.name || "");
+            if (name === "checklist.json" || name.indexOf("jrispace-checklist") === 0) {
+              var file = await f.getFile();
+              var text = await file.text();
+              var data = JSON.parse(text);
+              if (data && Array.isArray(data.phases)) {
+                data.project = sub.name;
+                localStorage.setItem(dataKey(key), JSON.stringify(data));
+                loaded++;
+              }
+              break;
+            }
+          }
+        } catch (err) {}
+      }
+    } catch (err) {
+      showToast("Scan failed: " + (err && err.message ? err.message : err));
+      return false;
+    }
+    registry.folder = dir.name;
+    saveRegistry();
+    showToast('Scanned "' + dir.name + '": ' + created + " new project(s), " + loaded + " checklist(s) imported");
+    switchTo(registry.projects[0].key);
+    projBarPage = 1;
+    if (currentView === "dashboard") renderDashboard();
+    return { dir: dir.name, created: created, loaded: loaded };
+  }
+  document.getElementById("btnScanFolder").addEventListener("click", function () { runScan(); });
+
+  document.getElementById("btnAddPhase").addEventListener("click", function () {
+    $modal.innerHTML =
+      '<h3>New phase</h3>' +
+      '<label style="font-size:12.5px;color:var(--muted);display:block;margin-bottom:4px;">Phase name</label>' +
+      '<input id="mPName" type="text" placeholder="e.g. Launch & Marketing" />' +
+      '<label style="font-size:12.5px;color:var(--muted);display:block;margin:10px 0 4px;">Description (optional)</label>' +
+      '<textarea id="mPDesc" style="min-height:52px;" placeholder="Short description…"></textarea>' +
+      '<div class="m-actions">' +
+        '<button id="mCancel">Cancel</button>' +
+        '<button id="mSave" class="primary">Add phase</button>' +
+      '</div>';
+    $overlay.classList.add("show");
+    var $name = document.getElementById("mPName");
+    function closeModal() { $overlay.classList.remove("show"); }
+    document.getElementById("mCancel").addEventListener("click", closeModal);
+    $overlay.addEventListener("click", function (e) { if (e.target === $overlay) closeModal(); });
+    document.getElementById("mSave").addEventListener("click", function () {
+      var v = $name.value.trim();
+      if (!v) { $name.focus(); return; }
+      current.data.phases.push({ name: v, desc: document.getElementById("mPDesc").value.trim() || undefined, tasks: [] });
+      saveCurrent(); closeModal(); renderPhases();
+    });
+    $name.addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); document.getElementById("mSave").click(); } });
+    setTimeout(function () { $name.focus(); }, 30);
+  });
+
+  document.getElementById("btnReset").addEventListener("click", function () {
+    if (!current) return;
+    if (confirm('Reset the checklist for "' + current.name + '" to the default JRiSpace template?')) {
+      current.data = scaffold(current.name);
+      saveCurrent(); renderPhases(); showToast("Project reset to default template");
+    }
+  });
+
+  document.getElementById("btnExport").addEventListener("click", function () {
+    if (!current) return;
+    var blob = new Blob([JSON.stringify(current.data, null, 2)], { type: "application/json" });
+    var a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "checklist.json";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(a.href);
+    showToast("Exported as checklist.json — save it inside your project folder for Scan");
+  });
+
+  document.getElementById("btnImport").addEventListener("click", function () { $fileInput.click(); });
+  $fileInput.addEventListener("change", function () {
+    var file = $fileInput.files[0];
+    if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function () {
+      try {
+        var data = JSON.parse(reader.result);
+        if (!data || !Array.isArray(data.phases)) throw new Error("Not a checklist file (missing 'phases' array).");
+        if (!current) throw new Error("No active project.");
+        data.project = current.name;
+        current.data = data;
+        saveCurrent(); renderPhases();
+        showToast('Checklist loaded into "' + current.name + '"');
+      } catch (e) { showToast("Import failed: " + (e && e.message ? e.message : e)); }
+    };
+    reader.readAsText(file);
+    $fileInput.value = "";
+  });
+
+  /* ── Toast ──────────────────────────────────────────────────────────── */
+  function showToast(msg) {
+    $toast.textContent = msg;
+    $toast.classList.add("show");
+    if (toastTimer) clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { $toast.classList.remove("show"); }, 3000);
+  }
+
+  /* ── Dashboard: charts & reports for ALL projects ──────────────────── */
+  var $dashboard = document.getElementById("dashboard");
+  var $summaryBar = document.getElementById("summaryBar");
+  var $btnViewChecklist = document.getElementById("btnViewChecklist");
+  var $btnViewDashboard = document.getElementById("btnViewDashboard");
+  var currentView = "checklist"; /* checklist | dashboard */
+
+  function projectStats(proj) {
+    var data = loadProjectData(proj.key, proj.name);
+    var total = 0, done = 0, phases = [];
+    data.phases.forEach(function (p) {
+      var t = p.tasks.length;
+      var d = p.tasks.filter(function (x) { return x.done; }).length;
+      total += t; done += d;
+      phases.push({ name: p.name || "Phase", total: t, done: d, pct: t ? Math.round(d / t * 100) : 0 });
+    });
+    return { name: proj.name, key: proj.key, total: total, done: done, pct: total ? Math.round(done / total * 100) : 0, phases: phases, updatedAt: data.updatedAt };
+  }
+
+  function allStats() {
+    var list = registry.projects.map(projectStats);
+    var t = 0, d = 0;
+    list.forEach(function (s) { t += s.total; d += s.done; });
+    return { projects: list, total: t, done: d, pct: t ? Math.round(d / t * 100) : 0 };
+  }
+
+  var projBarPage = 1;
+  var PROJ_PAGE_SIZE = 7;
+  var reportsPage = 1; /* galri Project Reports — pagination state */
+
+  /* ── System Health card (done soti nan ai-self-review.sh) ──────────── */
+  function renderHealth() {
+    var body = document.getElementById("healthBody");
+    var stamp = document.getElementById("healthStamp");
+    var h = window.JRISRACE_HEALTH;
+    if (!h) {
+      body.innerHTML = '<p style="color:var(--danger);font-size:13px;">⚠️ system-health.js pa jwenn — kouri <code>~/scripts/ai-self-review.sh</code> pou jenere l.</p>';
+      return;
+    }
+    stamp.textContent = "· " + (h.generatedAt || "");
+
+    var chips = [];
+    var p = h.policies || {};
+    chips.push('<span class="chip ' + (p.rules ? "chip-ok" : "chip-bad") + '">📜 rules.md</span>');
+    chips.push('<span class="chip ' + (p.charter ? "chip-ok" : "chip-bad") + '">📕 Charter</span>');
+    chips.push('<span class="chip ' + (p.policy ? "chip-ok" : "chip-bad") + '">⚖️ Policy</span>');
+
+    var s = h.services || {};
+    var svc = [
+      ["charterWatch", "Charter watcher"], ["watchdog", "Watchdog"],
+      ["htmlRefresh", "HTML refresh"], ["selfReview", "Self-review"], ["autoOrganize", "Auto-organize"]
+    ];
+    var svcHtml = svc.map(function (x) {
+      return '<span class="chip ' + (s[x[0]] ? "chip-ok" : "chip-bad") + '">' + x[1] + '</span>';
+    }).join("");
+
+    var hh = h.health || {};
+    var disk = hh.diskPct || 0;
+    var diskChip = disk >= 85 ? "chip-bad" : disk >= 70 ? "chip-warn" : "chip-ok";
+    var batt = hh.battery == null ? "—" : hh.battery + "%";
+
+    body.innerHTML =
+      '<div class="health-grid">' +
+        '<div class="health-col"><div class="health-label">📜 Politik</div><div class="chips">' + chips.join("") + '</div></div>' +
+        '<div class="health-col"><div class="health-label">⚙️ Services</div><div class="chips">' + svcHtml + '</div></div>' +
+        '<div class="health-col"><div class="health-label">💻 Sante</div><div class="chips">' +
+          '<span class="chip ' + diskChip + '">💾 Disk ' + disk + '%</span>' +
+          '<span class="chip chip-ok">🔋 ' + batt + '</span>' +
+          '<span class="chip ' + (hh.desktopLoose > 10 ? "chip-warn" : "chip-ok") + '">🖥️ ' + (hh.desktopLoose || 0) + ' lage Desktop</span>' +
+          '<span class="chip chip-ok">📥 ' + (hh.downloads || 0) + ' Downloads</span>' +
+          (hh.projectsNoAgents ? '<span class="chip chip-warn">⚠️ ' + hh.projectsNoAgents + ' pwojè san AGENTS.md</span>' : '<span class="chip chip-ok">✓ Tout pwojè gen AGENTS.md</span>') +
+        '</div></div>' +
+      '</div>';
+  }
+
+  /* ── Modal detay pwojè (klike sou ikon galri a) ────────────────────── */
+  function showProjectModal(s) {
+    var rows = (s.phases || []).map(function (p) {
+      var done = p.pct === 100 && p.total > 0;
+      return '<div class="rep' + (done ? " open" : "") + '">' +
+        '<div class="rep-head"><b>' + esc(p.name) + '</b><span class="rep-pct">' + p.pct + '%</span></div>' +
+        '<div class="rep-body"><table><thead><tr><th>Phase</th><th>Tasks</th><th></th><th>%</th></tr></thead><tbody>' +
+        '<tr><td>' + esc(p.name) + '</td><td>' + p.done + ' / ' + p.total + '</td>' +
+        '<td><div class="rep-mini"><div style="width:' + p.pct + '%"></div></div></td><td><b>' + p.pct + '%</b></td></tr>' +
+        '</tbody></table></div></div>';
+    }).join("") || '<p style="color:var(--muted);font-size:13px;">No tasks yet</p>';
+
+    var m = $modal;
+    m.innerHTML =
+      '<h3>📁 ' + esc(s.name) + ' <span style="font-weight:500;font-size:13px;color:var(--muted);">' + s.pct + '% · ' + s.done + '/' + s.total + ' tasks</span></h3>' +
+      '<div style="max-height:60vh;overflow-y:auto;margin-top:10px;">' + rows + '</div>' +
+      '<div class="m-actions">' +
+        '<button id="mClose">Close</button>' +
+        '<button id="mOpenProject" class="primary">Open in checklist →</button>' +
+      '</div>';
+    $overlay.classList.add("show");
+
+    function close() { $overlay.classList.remove("show"); }
+    document.getElementById("mClose").addEventListener("click", close);
+    $overlay.addEventListener("click", function (e) { if (e.target === $overlay) close(); });
+    document.getElementById("mOpenProject").addEventListener("click", function () {
+      close();
+      switchTo(s.key);
+      setView("checklist");
+    });
+  }
+
+  function renderDashboard() {
+    var all = allStats();
+    var kpis = document.getElementById("dashKpis");
+    kpis.innerHTML =
+      '<div class="kpi"><div class="k-val">' + all.projects.length + '</div><div class="k-label">Projects</div></div>' +
+      '<div class="kpi"><div class="k-val">' + all.total + '</div><div class="k-label">Total tasks</div></div>' +
+      '<div class="kpi"><div class="k-val">' + all.done + '</div><div class="k-label">Completed</div></div>' +
+      '<div class="kpi"><div class="k-val">' + all.pct + '%</div><div class="k-label">Overall</div></div>' +
+      '<div class="kpi"><div class="k-val">' + all.projects.filter(function (s) { return s.pct === 100 && s.total > 0; }).length + '</div><div class="k-label">Done projects</div></div>' +
+      '<div class="kpi"><div class="k-val">' + all.projects.filter(function (s) { return s.pct < 100 && s.total > 0; }).length + '</div><div class="k-label">In progress</div></div>';
+
+    var C = 351.86; /* 2 * PI * 56 */
+    document.getElementById("donutFg").style.strokeDashoffset = (C * (1 - all.pct / 100)).toFixed(1);
+    document.getElementById("donutTxt").textContent = all.pct + "%";
+    document.getElementById("donutLegend").textContent = all.done + " / " + all.total + " tasks done across " + all.projects.length + " project(s)";
+
+    /* Progress by Project — paginated (7 per page) */
+    var bars = document.getElementById("projBars");
+    var pageCount = Math.max(1, Math.ceil(all.projects.length / PROJ_PAGE_SIZE));
+    if (projBarPage > pageCount) projBarPage = pageCount;
+    var start = (projBarPage - 1) * PROJ_PAGE_SIZE;
+    var slice = all.projects.slice(start, start + PROJ_PAGE_SIZE);
+    bars.innerHTML = slice.map(function (s) {
+      return '<div class="proj-bar-row">' +
+        '<div class="proj-bar-head"><b>' + esc(s.name) + '</b><span>' + s.done + '/' + s.total + ' · ' + s.pct + '%</span></div>' +
+        '<div class="proj-track"><div style="width:' + s.pct + '%"></div></div>' +
+      '</div>';
+    }).join("") || '<p style="color:var(--muted);font-size:13px;">No projects yet — scan a folder first.</p>';
+    if (all.projects.length > PROJ_PAGE_SIZE) {
+      bars.insertAdjacentHTML("beforeend",
+        '<div class="pager">' +
+          '<button class="mini" data-pg="prev"' + (projBarPage <= 1 ? " disabled" : "") + '>‹ Prev</button>' +
+          '<span class="pager-info">Page ' + projBarPage + ' / ' + pageCount + ' · ' + all.projects.length + ' projects</span>' +
+          '<button class="mini" data-pg="next"' + (projBarPage >= pageCount ? " disabled" : "") + '>Next ›</button>' +
+        '</div>');
+    }
+
+    var reports = document.getElementById("dashReports");
+
+    /* Project Reports — gallery (icon view) + pagination */
+    var GALLERY_PAGE_SIZE = 12;
+    var repPageCount = Math.max(1, Math.ceil(all.projects.length / GALLERY_PAGE_SIZE));
+    if (reportsPage > repPageCount) reportsPage = repPageCount;
+    var rStart = (reportsPage - 1) * GALLERY_PAGE_SIZE;
+    var rSlice = all.projects.slice(rStart, rStart + GALLERY_PAGE_SIZE);
+
+    reports.innerHTML =
+      '<div class="gallery">' + rSlice.map(function (s) {
+        var done = s.pct === 100 && s.total > 0;
+        var ico = done ? "🏆" : (s.pct > 0 ? "📁" : "🗂️");
+        return '<div class="g-item' + (done ? " done" : "") + '" data-gkey="' + esc(s.key) + '" title="' + esc(s.name) + ' — ' + s.pct + '%">' +
+          '<div class="g-ico">' + ico + '</div>' +
+          '<span class="g-name">' + esc(s.name) + '</span>' +
+          '<span class="g-pct">' + s.pct + '% · ' + s.done + '/' + s.total + '</span>' +
+          '<div class="g-track"><div style="width:' + s.pct + '%"></div></div>' +
+        '</div>';
+      }).join("") + '</div>' +
+      (repPageCount > 1
+        ? '<div class="pager">' +
+          '<button class="mini" data-rpg="prev"' + (reportsPage <= 1 ? " disabled" : "") + '>‹ Prev</button>' +
+          '<span class="pager-info">Page ' + reportsPage + ' / ' + repPageCount + ' · ' + all.projects.length + ' projects</span>' +
+          '<button class="mini" data-rpg="next"' + (reportsPage >= repPageCount ? " disabled" : "") + '>Next ›</button>' +
+          '</div>'
+        : '');
+
+    reports.querySelectorAll(".g-item").forEach(function (item) {
+      item.addEventListener("click", function () {
+        var key = item.dataset.gkey;
+        var s = all.projects.filter(function (x) { return x.key === key; })[0];
+        if (s) showProjectModal(s);
+      });
+    });
+    reports.querySelectorAll("[data-rpg]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        if (b.disabled) return;
+        reportsPage += (b.dataset.rpg === "prev" ? -1 : 1);
+        renderDashboard();
+      });
+    });
+
+    renderHealth();
+  }
+
+  function buildMarkdownReport() {
+    var all = allStats();
+    var lines = [];
+    lines.push("# " + (config.company || "JRiSpace") + " Project Report");
+    lines.push("");
+    lines.push("- Root: " + (registry.folder || "~/Projects"));
+    lines.push("- Generated: " + new Date().toLocaleString());
+    lines.push("- Projects: " + all.projects.length + " | Tasks: " + all.done + "/" + all.total + " (" + all.pct + "%)");
+    lines.push("");
+    all.projects.forEach(function (s) {
+      lines.push("## " + s.name + " — " + s.pct + "% (" + s.done + "/" + s.total + ")");
+      s.phases.forEach(function (p) {
+        lines.push("- " + (p.pct === 100 && p.total > 0 ? "[x]" : "[ ]") + " " + p.name + ": " + p.done + "/" + p.total + " (" + p.pct + "%)");
+      });
+      lines.push("");
+    });
+    return lines.join("\n");
+  }
+
+  document.getElementById("projBars").addEventListener("click", function (e) {
+    var btn = e.target.closest("[data-pg]");
+    if (!btn || btn.disabled) return;
+    if (btn.dataset.pg === "prev") projBarPage--;
+    else projBarPage++;
+    renderDashboard();
+  });
+
+  document.getElementById("btnCopyReport").addEventListener("click", function () {
+    var text = buildMarkdownReport();
+    function fallback() {
+      var ta = document.createElement("textarea");
+      ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0";
+      document.body.appendChild(ta); ta.select();
+      try { document.execCommand("copy"); showToast("Report copied to clipboard"); }
+      catch (e) { showToast("Copy failed — select manually"); }
+      document.body.removeChild(ta);
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () { showToast("Report copied to clipboard"); }, fallback);
+    } else fallback();
+  });
+
+  function setView(view) {
+    currentView = view;
+    var dash = view === "dashboard";
+    $dashboard.hidden = !dash;
+    $phases.hidden = dash;
+    $summaryBar.style.display = dash ? "none" : "";
+    $btnViewChecklist.className = dash ? "" : "primary";
+    $btnViewDashboard.className = dash ? "primary" : "";
+    if (dash) renderDashboard();
+  }
+  $btnViewChecklist.addEventListener("click", function () { setView("checklist"); });
+  $btnViewDashboard.addEventListener("click", function () { setView("dashboard"); });
+
+  /* ── App config & branding ──────────────────────────────────────────── */
+  var CONFIG_KEY = "jrispace.config.v1";
+  var config = { company: "JRiSpace", author: "Sylvenson Richard", website: "jrispace.com", launched: false, skipped: false };
+  try {
+    var savedConfig = JSON.parse(localStorage.getItem(CONFIG_KEY) || "null");
+    if (savedConfig && typeof savedConfig === "object") {
+      for (var k in savedConfig) config[k] = savedConfig[k];
+    }
+  } catch (e) {}
+  function saveConfig() { try { localStorage.setItem(CONFIG_KEY, JSON.stringify(config)); } catch (e) {} }
+
+  function applyBrand() {
+    var company = config.company || "JRiSpace";
+    document.title = company + " Project Manager — Multi-project";
+    document.querySelectorAll("[data-brand]").forEach(function (el) {
+      var key = el.getAttribute("data-brand");
+      if (key === "company") el.textContent = company;
+      else if (key === "website") el.textContent = config.website || "jrispace.com";
+      else if (key === "author") el.textContent = config.author || "Sylvenson Richard";
+    });
+    var badge = document.getElementById("sideBadge");
+    if (badge) badge.textContent = "v2.4 · " + company + " | " + (config.author || "Sylvenson Richard");
+    var prev = document.getElementById("wizBrandPrev");
+    if (prev) prev.textContent = company;
+  }
+
+  /* ── Launch wizard ──────────────────────────────────────────────────── */
+  var $wizard = document.getElementById("launchWizard");
+  var $wizCompany = document.getElementById("wizCompany");
+  var wizSteps = [1, 2, 3, 4].map(function (n) { return document.getElementById("wizStep" + n); });
+  function wizShowStep(n) {
+    wizSteps.forEach(function (s, i) { s.style.display = i + 1 === n ? "" : "none"; });
+    [1, 2, 3, 4].forEach(function (i) {
+      document.getElementById("wizDot" + i).className = i === n ? "on" : "";
+    });
+  }
+  function openWizard() {
+    $wizCompany.value = config.company || "";
+    document.getElementById("wizRootPrev").textContent = "📁 " + (registry.folder || "~/Projects");
+    document.getElementById("wizRootInfo").textContent = "";
+    if (config.company && config.company !== "JRiSpace") wizShowStep(2);
+    else wizShowStep(1);
+    $wizard.classList.add("open");
+  }
+  function closeWizard() { $wizard.classList.remove("open"); }
+  function finishWizard() {
+    var v = $wizCompany.value.trim();
+    if (v) config.company = v;
+    config.launched = true;
+    saveConfig();
+    applyBrand();
+    document.getElementById("wizDoneMsg").textContent =
+      v ? 'Your workspace is now branded as "' + esc(v) + '".' : 'Kept "JRiSpace" as your company name.';
+    wizShowStep(4);
+  }
+  document.getElementById("wizNext1").addEventListener("click", function () {
+    wizShowStep(2);
+    setTimeout(function () { $wizCompany.focus(); $wizCompany.select(); }, 60);
+  });
+  document.getElementById("wizBack").addEventListener("click", function () { wizShowStep(1); });
+  document.getElementById("wizFinish").addEventListener("click", function () { wizShowStep(3); });
+  document.getElementById("wizBack3").addEventListener("click", function () { wizShowStep(2); });
+  document.getElementById("wizScan").addEventListener("click", function () {
+    var info = document.getElementById("wizRootInfo");
+    info.className = "wiz-root-info";
+    if (!window.showDirectoryPicker) {
+      info.textContent = "Folder scanning needs Chrome/Edge — you can skip this step.";
+      info.className = "wiz-root-info err";
+      return;
+    }
+    info.textContent = "Scanning…";
+    runScan().then(function (res) {
+      if (!res) { info.textContent = "No folder selected."; info.className = "wiz-root-info err"; return; }
+      document.getElementById("wizRootPrev").textContent = "📁 " + res.dir;
+      info.textContent = res.created + " new project(s), " + res.loaded + " checklist(s) imported.";
+    });
+  });
+  document.getElementById("wizContinue").addEventListener("click", finishWizard);
+  document.getElementById("wizClose").addEventListener("click", closeWizard);
+  document.getElementById("wizSkip").addEventListener("click", function () {
+    config.skipped = true;
+    saveConfig();
+    closeWizard();
+    showToast("You can re-open the wizard anytime from the sidebar menu");
+  });
+  document.getElementById("btnSettings").addEventListener("click", openWizard);
+  document.getElementById("btnViewWizard").addEventListener("click", openWizard);
+  $wizCompany.addEventListener("input", function () {
+    document.getElementById("wizBrandPrev").textContent = $wizCompany.value.trim() || "JRiSpace";
+  });
+  $wizCompany.addEventListener("keydown", function (e) {
+    if (e.key === "Enter") { e.preventDefault(); document.getElementById("wizFinish").click(); }
+  });
+
+  /* ── Init ───────────────────────────────────────────────────────────── */
+  migrateLegacyIfNeeded();
+  saveRegistry();
+  if (registry.projects.length) switchTo(registry.projects[0].key);
+  else {
+    registry.projects.push({ key: defaultProjectKey(), name: defaultProjectName() });
+    saveRegistry();
+    switchTo(defaultProjectKey());
+  }
+  applyBrand();
+  if (!config.launched && !config.skipped) openWizard();
+})();
+</script>
+</body>
+</html>
