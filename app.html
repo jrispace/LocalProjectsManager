@@ -629,13 +629,13 @@
   /* ── Default template: shared phases used by every new project ─────── */
   var DEFAULT_PHASES = [
     { name: "Project Intake", desc: "Requirements gate — goal, audience, features, budget, timeline." },
-    { name: "Plan & Architecture", desc: "Monorepo, apps, shared packages, plugin system, docs." },
-    { name: "Design", desc: "Branding, UI kits, i18n content across languages." },
-    { name: "Build — Apps", desc: "Next.js portals, admin, docs, landing, functions." },
-    { name: "Firebase & Auth", desc: "Firestore, rules, indexes, Clerk auth, media storage." },
-    { name: "Verify & QA", desc: "Build, typecheck, verify gate, tests." },
-    { name: "Deploy", desc: "Firebase App Hosting backends, rollouts, DNS." },
-    { name: "Document & Report", desc: "Docs, changelog, signatures." }
+    { name: "Plan & Architecture", desc: "Tech stack, system design, data model, technical decisions." },
+    { name: "Design", desc: "Wireframes, branding, UI kit, responsive & accessible." },
+    { name: "Build", desc: "Frontend, backend, integrations, core features." },
+    { name: "Auth & Data", desc: "Authentication, database, storage, security rules." },
+    { name: "Verify & QA", desc: "Build checks, automated tests, manual QA." },
+    { name: "Deploy", desc: "Pipeline, production deploy, domain, monitoring." },
+    { name: "Document & Report", desc: "Docs, changelog, final report." }
   ];
 
   /* Default checklist template (seeded on first run, usable by any project) */
@@ -647,61 +647,59 @@
       var tasks = [];
       if (p.name === "Project Intake") {
         tasks = [
-          { text: "Define primary business goal & success metrics", done: true },
-          { text: "Identify target user / client audience", done: true },
-          { text: "List must-have vs nice-to-have features", done: false, notes: "See project plan" },
+          { text: "Define primary business goal & success metrics", done: false },
+          { text: "Identify target user / client audience", done: false },
+          { text: "List must-have vs nice-to-have features", done: false },
           { text: "Confirm budget range & hosting choice", done: false },
           { text: "Record deadline / launch date", done: false },
           { text: "Record answers in the project plan (PRD)", done: false }
         ];
       } else if (p.name === "Plan & Architecture") {
         tasks = [
-          { text: "Set up monorepo (workspaces + turbo)", done: false },
-          { text: "Define apps and shared packages", done: false },
-          { text: "Document architecture", done: false },
+          { text: "Choose the technology stack", done: false },
+          { text: "Document the system architecture", done: false },
+          { text: "Design the data model", done: false },
           { text: "Write ADRs for major technical decisions", done: false }
         ];
       } else if (p.name === "Design") {
         tasks = [
-          { text: "Apply JRiSpace branding (colors, typography, logo)", done: false },
-          { text: "Build shared UI components", done: false },
-          { text: "Prepare translations (EN / FR / HT / ES)", done: false },
-          { text: "Certificate / badge visual assets", done: false },
+          { text: "Create wireframes & mockups", done: false },
+          { text: "Define branding (colors, typography, logo)", done: false },
+          { text: "Build reusable UI components", done: false },
           { text: "Accessibility & responsive audit (WCAG)", done: false }
         ];
-      } else if (p.name === "Build — Apps") {
+      } else if (p.name === "Build") {
         tasks = [
-          { text: "Build main portal", done: false },
-          { text: "Build language variants", done: false },
-          { text: "Build admin / backend", done: false },
-          { text: "Build support services / functions", done: false }
+          { text: "Build the frontend", done: false },
+          { text: "Build the backend / APIs", done: false },
+          { text: "Integrate third-party services", done: false },
+          { text: "Implement core features end-to-end", done: false }
         ];
-      } else if (p.name === "Firebase & Auth") {
+      } else if (p.name === "Auth & Data") {
         tasks = [
-          { text: "Configure Firestore rules & indexes", done: false },
-          { text: "Wire auth (Clerk)", done: false },
-          { text: "Storage buckets & CORS", done: false }
+          { text: "Set up user authentication", done: false },
+          { text: "Configure the database", done: false },
+          { text: "Set up file / media storage", done: false },
+          { text: "Define security rules & permissions", done: false }
         ];
       } else if (p.name === "Verify & QA") {
         tasks = [
-          { text: "Run production build", done: false },
-          { text: "Run typecheck (tsc --noEmit)", done: false },
-          { text: "Run ~/scripts/ai-code-verify.sh", done: false },
-          { text: "Write & pass tests", done: false },
-          { text: "Manual QA in browser", done: false }
+          { text: "Run a production build", done: false },
+          { text: "Write & pass automated tests", done: false },
+          { text: "Manual QA in the browser", done: false },
+          { text: "Fix bugs & edge cases", done: false }
         ];
       } else if (p.name === "Deploy") {
         tasks = [
-          { text: "Configure deployment config (apphosting.yaml)", done: false },
-          { text: "Deploy backends", done: false },
-          { text: "Push to remotes to trigger rollouts", done: false },
-          { text: "Verify live sites + DNS", done: false }
+          { text: "Set up the deployment pipeline", done: false },
+          { text: "Deploy to production", done: false },
+          { text: "Configure domain & DNS", done: false },
+          { text: "Verify the live site", done: false }
         ];
       } else {
         tasks = [
-          { text: "Update project documentation", done: false },
-          { text: "Write CHANGELOG", done: false },
-          { text: "Mark deliverables with JRiSpace / Sylvenson Richard signature", done: false },
+          { text: "Write project documentation", done: false },
+          { text: "Create a changelog", done: false },
           { text: "Final report: what works, what was fixed, what needs attention", done: false }
         ];
       }
@@ -782,14 +780,16 @@
   }
 
   /* ── Non default pwojè a — DINAMIK: si wizard la rename konpayi an, tout
-     referans "GloryPlatform" default yo pran non sa a. ──────────────── */
+     nouvo pwojè yo pran non sa a. Otreman jenerik: "My Project". ─────── */
   function defaultProjectName() {
     var c = config && config.company;
-    return (c && c !== "JRiSpace") ? c : "GloryPlatform";
+    return (c && c !== "JRiSpace") ? c : "My Project";
   }
   function defaultProjectKey() { return slug(defaultProjectName()); }
 
-  /* ── Migration: legacy single-project data → default project ───────── */
+  /* ── Migration: legacy single-project data → project ─────────────────
+     IMPORTANT: pa janm kreye yon pwojè default. Fresh install = registry
+     vid = totally clean. Sèlman imigre si gen done legacy (v1). ─────── */
   function migrateLegacyIfNeeded() {
     if (registry.projects.length > 0) return;
     try {
@@ -803,15 +803,12 @@
           if (!findProject(key)) registry.projects.push(p);
           localStorage.setItem(dataKey(key), JSON.stringify(d));
           localStorage.removeItem(LEGACY_KEY);
+          saveRegistry();
           return;
         }
       }
     } catch (e) {}
-    /* no legacy data → default project */
-    var gp = { key: defaultProjectKey(), name: defaultProjectName() };
-    registry.projects.push(gp);
-    localStorage.setItem(dataKey(gp.key), JSON.stringify(scaffold(gp.name)));
-    saveRegistry();
+    /* pa gen done → pa kreye anyen (app la rete pwòp) */
   }
 
   /* ── Progress ───────────────────────────────────────────────────────── */
@@ -972,7 +969,7 @@
     var p = findProject(key);
     if (!p) {
       if (registry.projects.length) p = registry.projects[0];
-      else { p = { key: defaultProjectKey(), name: defaultProjectName() }; registry.projects.push(p); saveRegistry(); }
+      else { current = null; renderAll(); return; } /* pa gen pwojè → clean state */
     }
     p.data = loadProjectData(p.key, p.name);
     current = p;
@@ -1550,11 +1547,7 @@
   migrateLegacyIfNeeded();
   saveRegistry();
   if (registry.projects.length) switchTo(registry.projects[0].key);
-  else {
-    registry.projects.push({ key: defaultProjectKey(), name: defaultProjectName() });
-    saveRegistry();
-    switchTo(defaultProjectKey());
-  }
+  else { current = null; renderAll(); } /* fresh install → totally clean */
   applyBrand();
   if (!config.launched && !config.skipped) openWizard();
 })();
