@@ -8,7 +8,7 @@ A 100% local project manager by **Sylvenson Richard** / **JRiSpace** — track e
 
 ## 🚀 Quick start
 
-1. **Download** the latest release (zip) from the [Releases page](https://github.com/jrihosting/LocalProjectsManager/releases) — or open the [landing page](https://jrihosting.github.io/LocalProjectsManager/) and click **Download App**.
+1. **Download** the latest release (zip) from the [Releases page](https://github.com/jrispace/LocalProjectsManager/releases) — or open the [landing page](https://jrispace.github.io/LocalProjectsManager/) and click **Download App**.
 2. **Unzip** anywhere (double-click in Finder).
 3. **Double-click `app.html`** — it opens in your browser and works instantly. No install, no dependencies.
 
