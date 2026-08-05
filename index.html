@@ -5,6 +5,15 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>LocalProjectsManager — JRiSpace Project Manager</title>
 <meta name="description" content="LocalProjectsManager — 100% local project manager. Your data never leaves your machine. Download the latest version free.">
+<!-- PWA: manifest + icons (jrispace logo) -->
+<link rel="manifest" href="manifest.webmanifest" />
+<meta name="theme-color" content="#101014" />
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png" />
+<link rel="icon" type="image/png" sizes="16x16" href="icons/favicon-16.png" />
+<link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-title" content="Projects" />
 <style>
   :root {
     --brand: #0b63f6;
@@ -272,6 +281,11 @@
 
   $btn.addEventListener("click", downloadApp);
   loadReleaseInfo();
+
+  /* ── PWA: enstale service worker a (https sèlman) ──────────────────── */
+  if ("serviceWorker" in navigator && /^https:/.test(location.protocol)) {
+    navigator.serviceWorker.register("sw.js").catch(function () {});
+  }
 })();
 </script>
 </body>
