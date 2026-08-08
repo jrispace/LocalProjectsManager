@@ -153,6 +153,10 @@
     padding: 5px 12px; white-space: nowrap; letter-spacing: .3px;
     box-shadow: 0 4px 14px rgba(56, 189, 248, .45);
   }
+  .badge.db-on { background: linear-gradient(135deg, #047857, #10b981, #34d399); box-shadow: 0 4px 14px rgba(16,185,129,.4); }
+  .badge.db-off { background: linear-gradient(135deg, #92400e, #d97706, #f59e0b); box-shadow: 0 4px 14px rgba(217,119,6,.35); }
+  .side-foot { gap: 6px; }
+  .side-foot .mini { width: 100%; }
 
   button {
     font: inherit; cursor: pointer; border: 1px solid var(--border); background: var(--card);
@@ -581,9 +585,11 @@
       </div>
 
       <div class="side-foot">
+        <button id="btnDbConnect" class="mini primary" title="Save all data to a local database file on your computer (survives clearing browser cache)">💾 Connect DB</button>
         <button id="btnSettings" class="mini" title="Re-open the launch wizard to change the company name">⚙ Brand</button>
         <button id="btnRenameProject" class="mini" title="Rename the current project">Rename</button>
         <button id="btnDeleteProject" class="mini ghost-danger" title="Delete the current project (localStorage only)">Delete</button>
+        <div class="badge" id="dbBadge">💾 …</div>
         <div class="badge" id="sideBadge">v2.3 · JRiSpace | Sylvenson Richard</div>
       </div>
     </aside>
@@ -962,6 +968,7 @@
   function saveRegistry() {
     try { localStorage.setItem(STORAGE_REGISTRY, JSON.stringify(registry)); }
     catch (e) { showToast("Save failed: " + (e && e.message ? e.message : e)); }
+    dbScheduleSave(); /* miroir sou disk */
   }
   function dataKey(key) { return STORAGE_CHECK + key; }
   function slug(s) {
@@ -989,6 +996,7 @@
     current.data.project = current.name;
     try { localStorage.setItem(dataKey(current.key), JSON.stringify(current.data)); }
     catch (e) { showToast("Save failed: " + (e && e.message ? e.message : e)); }
+    dbScheduleSave(); /* miroir sou disk */
   }
   function deepClone(obj) { return JSON.parse(JSON.stringify(obj)); }
   function esc(s) {
@@ -1001,6 +1009,192 @@
       if (registry.projects[i].key === key) return registry.projects[i];
     }
     return null;
+  }
+
+  /* ── Local Disk Database (File System Access API) ─────────────────────
+     Done yo pa nan browser ankò: yo nan yon fichye jrispace-pm.db sou
+     disk la (folder user chwazi a). Lè user efface cache a, done yo rete
+     sou disk la. localStorage sèvi sèlman kòm cache vitès.
+     API a mande Chrome/Edge (desktop + Android). Fallback: localStorage. */
+  var DB_FILE = "jrispace-pm.db";
+  var db = {
+    rootHandle: null, folderName: "", ready: false, saveTimer: null,
+    idbName: "jrispace-pm-db", idbStore: "handles"
+  };
+
+  function dbSupported() {
+    return typeof window.showDirectoryPicker === "function";
+  }
+
+  /* IndexedDB: kenbe root handle a pou re-konekte otomatikman apre reload
+     (se yon pèmizyon, PA done — done yo nan fichye a sou disk) */
+  function idbOpen() {
+    return new Promise(function (resolve, reject) {
+      var req = indexedDB.open(db.idbName, 1);
+      req.onupgradeneeded = function () {
+        if (!req.result.objectStoreNames.contains(db.idbStore)) req.result.createObjectStore(db.idbStore);
+      };
+      req.onsuccess = function () { resolve(req.result); };
+      req.onerror = function () { reject(req.error); };
+    });
+  }
+  function idbPut(key, val) {
+    return idbOpen().then(function (idb) {
+      return new Promise(function (resolve, reject) {
+        var tx = idb.transaction(db.idbStore, "readwrite");
+        tx.objectStore(db.idbStore).put(val, key);
+        tx.oncomplete = function () { resolve(); };
+        tx.onerror = function () { reject(tx.error); };
+      });
+    }).catch(function () {});
+  }
+  function idbGet(key) {
+    return idbOpen().then(function (idb) {
+      return new Promise(function (resolve, reject) {
+        var tx = idb.transaction(db.idbStore, "readonly");
+        var rq = tx.objectStore(db.idbStore).get(key);
+        rq.onsuccess = function () { resolve(rq.result); };
+        rq.onerror = function () { reject(rq.error); };
+      });
+    }).catch(function () { return null; });
+  }
+
+  /* Chaje done yo depi fichye DB a sou disk → localStorage (cache) */
+  async function dbLoadFromDisk() {
+    if (!db.rootHandle) return false;
+    try {
+      var fh = await db.rootHandle.getFileHandle(DB_FILE, { create: false });
+      var f = await fh.getFile();
+      var text = await f.text();
+      if (!text) return false;
+      var data = JSON.parse(text);
+      if (!data || !data.projects) return false;
+      registry.projects = data.projects;
+      registry.folder = data.folder || registry.folder;
+      if (data.config) config = Object.assign({}, config, data.config);
+      Object.keys(data.data || {}).forEach(function (key) {
+        try { localStorage.setItem(dataKey(key), JSON.stringify(data.data[key])); } catch (e) {}
+      });
+      return true;
+    } catch (e) { return false; }
+  }
+
+  /* Ekri tout eta a nan fichye DB a sou disk (JSON pretty) */
+  async function dbWrite() {
+    if (!db.rootHandle) return false;
+    try {
+      var payload = {
+        format: "jrispace-pm", version: 1,
+        savedAt: new Date().toISOString(),
+        folder: registry.folder || "",
+        projects: registry.projects,
+        config: config,
+        data: {}
+      };
+      registry.projects.forEach(function (p) {
+        try {
+          var raw = localStorage.getItem(dataKey(p.key));
+          if (raw) payload.data[p.key] = JSON.parse(raw);
+        } catch (e) {}
+      });
+      var fh = await db.rootHandle.getFileHandle(DB_FILE, { create: true });
+      var w = await fh.createWritable();
+      await w.write(JSON.stringify(payload, null, 2));
+      await w.close();
+      return true;
+    } catch (e) { console.warn("DB write failed:", e); return false; }
+  }
+
+  function dbScheduleSave() {
+    if (!db.ready || !db.rootHandle) return;
+    clearTimeout(db.saveTimer);
+    db.saveTimer = setTimeout(function () { dbWrite(); }, 600);
+  }
+
+  /* Kreye yon folder fizik pou yon pwojè + ekri checklist.json andedan */
+  async function dbCreateProjectFolder(key, name) {
+    if (!db.rootHandle) return false;
+    try {
+      var dir = await db.rootHandle.getDirectoryHandle(key, { create: true });
+      var raw = localStorage.getItem(dataKey(key));
+      if (raw) {
+        try {
+          var fh = await dir.getFileHandle("checklist.json", { create: true });
+          var w = await fh.createWritable();
+          await w.write(raw);
+          await w.close();
+        } catch (e) {}
+      }
+      return true;
+    } catch (e) { console.warn("mkdir failed:", e); return false; }
+  }
+
+  /* Konekte DB a: user chwazi folder root la (user gesture obligatwa) */
+  async function dbConnect() {
+    if (!dbSupported()) {
+      showToast("Disk database needs Chrome/Edge (File System Access API)");
+      return false;
+    }
+    try {
+      var dir = await window.showDirectoryPicker({ mode: "readwrite" });
+      db.rootHandle = dir;
+      db.folderName = dir.name;
+      db.ready = true;
+      idbPut("root", dir);
+      var loaded = await dbLoadFromDisk();
+      if (!loaded) await dbWrite(); /* premye fwa: kreye DB file la */
+      saveRegistry();
+      renderDbBadge();
+      renderSidebar();
+      /* Si done yo chaje depi disk epi pa gen pwojè chwazi → al pi premye a */
+      if (loaded && registry.projects.length && !current) switchTo(registry.projects[0].key);
+      else if (loaded) { current.data = loadProjectData(current.key, current.name); renderAll(); }
+      showToast(loaded ? "💾 DB loaded: " + dir.name + "/" + DB_FILE
+                       : "💾 DB created: " + dir.name + "/" + DB_FILE);
+      return true;
+    } catch (e) {
+      if (e && e.name === "AbortError") return false; /* user cancel */
+      console.warn("dbConnect failed:", e);
+      return false;
+    }
+  }
+
+  /* Re-konekte otomatikman depi IndexedDB (pèmizyon deja bay) */
+  async function dbAutoReconnect() {
+    if (!dbSupported() || !indexedDB) return false;
+    try {
+      var handle = await idbGet("root");
+      if (!handle) return false;
+      var perm = await handle.queryPermission({ mode: "readwrite" });
+      if (perm !== "granted") return false; /* san gesture pa ka mande */
+      db.rootHandle = handle;
+      db.folderName = handle.name;
+      db.ready = true;
+      var loaded = await dbLoadFromDisk();
+      renderDbBadge();
+      renderSidebar();
+      if (loaded) {
+        if (registry.projects.length) switchTo(registry.projects[0].key);
+        else { current = null; renderAll(); }
+      }
+      return loaded;
+    } catch (e) { return false; }
+  }
+
+  /* Endikatè UI: kote done yo ye */
+  function renderDbBadge() {
+    var el = document.getElementById("dbBadge");
+    if (!el) return;
+    if (db.ready && db.rootHandle) {
+      el.textContent = "💾 " + db.folderName + "/" + DB_FILE;
+      el.className = "badge db-on";
+    } else if (dbSupported()) {
+      el.textContent = "💾 Browser only — connect a folder";
+      el.className = "badge db-off";
+    } else {
+      el.textContent = "💾 Browser only (needs Chrome/Edge)";
+      el.className = "badge db-off";
+    }
   }
 
   /* ── Non default pwojè a — DINAMIK: si wizard la rename konpayi an, tout
@@ -1474,6 +1668,9 @@
         registry.projects.push(p);
         saveRegistry();
         switchTo(key);
+        saveCurrent(); /* ekri data a nan cache anvan kreye folder la */
+        /* Kreye yon folder fizik sou disk (si DB konekte) + checklist.json andedan */
+        if (db.ready && db.rootHandle) dbCreateProjectFolder(key, v);
       } else {
         current.name = v;
         saveRegistry();
@@ -1513,8 +1710,22 @@
       return false;
     }
     var dir;
-    try { dir = await window.showDirectoryPicker({ mode: "read" }); }
+    try { dir = await window.showDirectoryPicker({ mode: "readwrite" }); }
     catch (e) { return false; } /* user cancelled */
+
+    /* Konekte disk DB a sou menm folder la (readwrite) — si poko konekte */
+    if (!db.ready || !db.rootHandle) {
+      try {
+        db.rootHandle = dir;
+        db.folderName = dir.name;
+        db.ready = true;
+        idbPut("root", dir);
+        var loaded = await dbLoadFromDisk();
+        if (!loaded) await dbWrite(); /* kreye jrispace-pm.db la premye fwa */
+        renderDbBadge();
+      } catch (err) { console.warn("db connect on scan failed:", err); }
+    }
+
     var created = 0, loaded = 0;
     try {
       for await (var sub of dir.values()) {
@@ -1901,7 +2112,7 @@
       for (var k in savedConfig) config[k] = savedConfig[k];
     }
   } catch (e) {}
-  function saveConfig() { try { localStorage.setItem(CONFIG_KEY, JSON.stringify(config)); } catch (e) {} }
+  function saveConfig() { try { localStorage.setItem(CONFIG_KEY, JSON.stringify(config)); } catch (e) {} dbScheduleSave(); }
 
   function applyBrand() {
     var company = config.company || "JRiSpace";
@@ -1977,6 +2188,18 @@
     closeWizard();
     showToast("You can re-open the wizard anytime from the sidebar menu");
   });
+  document.getElementById("btnDbConnect").addEventListener("click", function () {
+    if (db.ready && db.rootHandle) {
+      /* Deja konekte → re-ekri DB file la kounye a (sans debounce) */
+      dbWrite().then(function (ok) {
+        showToast(ok ? "💾 DB saved: " + db.folderName + "/" + DB_FILE : "DB save failed");
+      });
+      return;
+    }
+    dbConnect().then(function (ok) {
+      if (ok && current) { renderAll(); }
+    });
+  });
   document.getElementById("btnSettings").addEventListener("click", openWizard);
   document.getElementById("btnViewWizard").addEventListener("click", openWizard);
   $wizCompany.addEventListener("input", function () {
@@ -1989,10 +2212,14 @@
   /* ── Init ───────────────────────────────────────────────────────────── */
   migrateLegacyIfNeeded();
   saveRegistry();
+  renderDbBadge();
   if (registry.projects.length) switchTo(registry.projects[0].key);
   else { current = null; renderAll(); } /* fresh install → totally clean */
   applyBrand();
   if (!config.launched && !config.skipped) openWizard();
+  dbAutoReconnect().then(function (ok) {
+    if (ok && current) renderAll(); /* done yo chaje depi disk — re-render */
+  });
 
   /* ── PWA: enstale service worker a (https sèlman — file:// pa sipòte) ─ */
   if ("serviceWorker" in navigator && /^https:/.test(location.protocol)) {
