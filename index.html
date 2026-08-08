@@ -147,7 +147,7 @@
   <div class="wrap">
     <div class="logo">JRiSpace · LOCAL PROJECTS MANAGER</div>
     <h1>Your projects. Your machine. <br>Nothing leaves your computer.</h1>
-    <p class="tag">A 100% local project manager — track every project, phase and task with a live dashboard, progress reports and system health. No account, no server, no tracking.</p>
+    <p class="tag">A 100% local project manager — track every project, phase and task with a live dashboard, progress reports and a real database file on your disk. Works like a native app on your phone. No account, no server, no tracking.</p>
     <div class="hero-btns">
       <button class="btn btn-primary" id="dlBtn">⬇️ Download App (.zip)</button>
       <a class="btn btn-ghost" href="app.html">🚀 Open App locally</a>
@@ -163,7 +163,7 @@
       <div class="ico">🔒</div>
       <div>
         <h3>Your data stays on your machine — 100%</h3>
-        <p><b>We do not have access to your data.</b> LocalProjectsManager runs entirely in your browser, storing everything in your browser's local storage. There is <b>no server, no cloud sync, no analytics, no accounts</b> — if you clear your browser data, your projects are gone with it (export a backup first!).</p>
+        <p><b>We do not have access to your data.</b> LocalProjectsManager runs entirely in your browser, storing everything in a <b>local database file on your disk</b> (<code>jrispace-pm.db</code>) plus a browser cache. There is <b>no server, no cloud sync, no analytics, no accounts</b> — click <b>💾 Connect DB</b>, pick a folder, and every change is written to disk automatically. Even if you clear your browser cache, your projects survive.</p>
       </div>
     </div>
 
@@ -171,11 +171,13 @@
     <p class="sub">Designed by <b>Sylvenson Richard</b> for <b>JRiSpace</b>, the app works offline, instantly, and never phones home.</p>
 
     <div class="grid">
+      <div class="card"><div class="ico">💾</div><h4>Local disk database</h4><p>One tap on <b>Connect DB</b> writes every change to a real file (<code>jrispace-pm.db</code>) on your machine — survives clearing your browser cache.</p></div>
+      <div class="card"><div class="ico">📁</div><h4>Projects become folders</h4><p>“+ New” creates a real folder for each project with its <code>checklist.json</code> inside — scan the parent folder and everything comes back.</p></div>
+      <div class="card"><div class="ico">📱</div><h4>Real mobile app feel</h4><p>Bottom navigation bar, slide-in menu drawer and touch-friendly controls — it behaves like a native app on your phone.</p></div>
       <div class="card"><div class="ico">📊</div><h4>Live Dashboard</h4><p>Overall completion, progress per project, donut charts and KPI cards — updated the second you tick a task.</p></div>
-      <div class="card"><div class="ico">📁</div><h4>Gallery view</h4><p>Projects shown like a desktop folder — icon view with progress bars, plus pagination for large portfolios.</p></div>
+      <div class="card"><div class="ico">📋</div><h4>Task side sheet</h4><p>Tap any task for full details — who created it, when, scope, status — plus sub-tasks you can add, tick and track.</p></div>
+      <div class="card"><div class="ico">⟳</div><h4>Profile verify</h4><p>Verify any project against its known template: missing tasks are added, completed work is marked done — nothing is ever deleted.</p></div>
       <div class="card"><div class="ico">🖥️</div><h4>System health</h4><p>The dashboard also shows your Mac's health: policies, background services, disk, battery and clutter.</p></div>
-      <div class="card"><div class="ico">🧩</div><h4>Phases & tasks</h4><p>Every project ships with a full phase template (intake → plan → design → build → verify → deploy → report).</p></div>
-      <div class="card"><div class="ico">📦</div><h4>Export / Import</h4><p>Backup your workspace to a JSON file and restore it anywhere — your data is always portable.</p></div>
       <div class="card"><div class="ico">🎨</div><h4>Branded in 30s</h4><p>Setup wizard lets you name the workspace after your company — the whole UI follows.</p></div>
     </div>
   </div>
@@ -203,7 +205,13 @@
       <li>
         <div>
           <b>Scan your projects</b>
-          <span>Click <b>Scan folder</b> and pick <code>~/Projects</code> — every subfolder becomes a project. Or click <b>+ New</b> to create one with the default template. Tick tasks, watch the dashboard fill up.</span>
+          <span>Click <b>Scan folder</b> and pick <code>~/Projects</code> — every subfolder becomes a project. Or click <b>+ New</b> to create one with a real folder on disk. Tick tasks, watch the dashboard fill up.</span>
+        </div>
+      </li>
+      <li>
+        <div>
+          <b>Connect your database</b>
+          <span>Click <b>💾 Connect DB</b> (same folder is fine) — the app creates <code>jrispace-pm.db</code> and saves every change to it automatically. Clear your browser cache all you want: your projects live on disk, not in the browser.</span>
         </div>
       </li>
     </ol>
