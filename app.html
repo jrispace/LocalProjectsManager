@@ -467,6 +467,93 @@
     .side-sheet { width: 100%; max-width: 100%; }
   }
 
+  /* ── Mobile app shell (bottom nav + drawer) ─────────────────────────── */
+  .menu-btn { display: none; }
+  .drawer-overlay, .tabbar { display: none; }
+
+  @media (max-width: 900px) {
+    .menu-btn {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 40px; height: 40px; flex-shrink: 0; font-size: 19px;
+      background: linear-gradient(135deg, #0141c2, #0b63f6, #38bdf8);
+      border: none; color: #fff; border-radius: 11px;
+      box-shadow: 0 4px 14px rgba(56, 189, 248, .4);
+    }
+    .menu-btn:active { transform: translateY(1px); }
+    .drawer-overlay {
+      display: block; position: fixed; inset: 0; z-index: 940;
+      background: rgba(5, 15, 35, .55); backdrop-filter: blur(3px);
+      opacity: 0; pointer-events: none; transition: opacity .22s ease;
+    }
+    .drawer-overlay.show { opacity: 1; pointer-events: auto; }
+    .side {
+      position: fixed; top: 0; left: 0; bottom: 0; z-index: 950;
+      width: min(310px, 86vw); max-height: none;
+      border-radius: 0 18px 18px 0;
+      transform: translateX(-110%);
+      transition: transform .26s cubic-bezier(.32, .72, .32, 1);
+      padding-bottom: 30px;
+    }
+    .side.open { transform: translateX(0); box-shadow: 18px 0 50px rgba(2, 20, 55, .5); }
+    #sideProjects { flex-direction: column; flex-wrap: nowrap; }
+    .side-proj { width: 100%; flex: none; }
+    /* bottom app bar */
+    .tabbar {
+      display: flex; position: fixed; left: 0; right: 0; bottom: 0; z-index: 800;
+      justify-content: space-around; align-items: flex-end;
+      background: rgba(255, 255, 255, .97);
+      backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+      border-top: 1px solid rgba(219, 227, 239, .85);
+      box-shadow: 0 -6px 24px rgba(1, 65, 194, .18);
+      padding: 6px 6px calc(8px + env(safe-area-inset-bottom));
+    }
+    .tabbar button {
+      display: flex; flex-direction: column; align-items: center; gap: 2px;
+      background: none; border: none; box-shadow: none; color: var(--muted);
+      min-width: 56px; padding: 5px 8px 3px; border-radius: 12px;
+      font-size: 10.5px; font-weight: 600; line-height: 1.15;
+    }
+    .tabbar button:hover { border: none; box-shadow: none; }
+    .tabbar button:active { transform: none; }
+    .tabbar button .tb-ico { font-size: 21px; line-height: 1; }
+    .tabbar button.on { color: var(--brand-dark); }
+    .tabbar button.on .tb-ico { transform: translateY(-1px); }
+    .tabbar button.tab-fab {
+      background: linear-gradient(135deg, #0141c2, #0b63f6, #38bdf8);
+      color: #fff; border-radius: 50%;
+      width: 52px; height: 52px; min-width: 52px;
+      justify-content: center; margin-bottom: 2px;
+      box-shadow: 0 6px 18px rgba(56, 189, 248, .5);
+      transform: translateY(-14px);
+    }
+    .tabbar button.tab-fab .tb-ico { font-size: 26px; font-weight: 700; }
+    .tabbar button.tab-fab .tb-lbl { margin-top: -8px; font-size: 10px; color: rgba(255,255,255,.9); }
+    .tabbar button.tab-fab:active { transform: translateY(-12px); }
+  }
+
+  @media (max-width: 640px) {
+    /* scroll area below the app bar */
+    .wrap { padding-bottom: 96px; }
+    .toast { bottom: 92px; }
+    header.top { padding: 10px 12px; gap: 10px; }
+    header.top .title h1 { font-size: 17px; }
+    .summary { padding: 14px; gap: 10px; }
+    .actions { width: 100%; overflow-x: auto; flex-wrap: nowrap; padding-bottom: 2px; }
+    .actions button { flex-shrink: 0; }
+    /* bigger touch targets */
+    li.task { padding: 12px 8px; gap: 10px; }
+    li.task input[type=checkbox] { width: 22px; height: 22px; margin-top: 1px; }
+    li.task .t-label { font-size: 14.5px; }
+    .add-row input { padding: 12px 14px; font-size: 15px; }
+    .phase-head { padding: 14px 12px; }
+    .phase-name { font-size: 15px; }
+    .overlay { align-items: flex-end; padding: 12px; }
+    .modal { border-radius: 18px 18px 0 0; padding-bottom: calc(22px + env(safe-area-inset-bottom)); }
+    .gallery { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); }
+    .kpis { grid-template-columns: repeat(2, 1fr); }
+    footer { margin-bottom: 70px; font-size: 11px; }
+  }
+
   /* ── Task side sheet (right panel: details + sub-tasks) ────────────── */
   .sheet-overlay {
     position: fixed; inset: 0; z-index: 900;
@@ -596,6 +683,7 @@
 
     <div class="main">
       <header class="top">
+        <button id="btnMenu" class="menu-btn" title="Open menu" aria-label="Open menu">☰</button>
         <div class="title">
           <h1><span class="v" id="headProject">—</span></h1>
           <div class="sub">Interactive multi-project dashboard &amp; checklist · no server needed · saves automatically</div>
@@ -680,6 +768,16 @@
   </div>
 
   <div class="toast" id="toast"></div>
+
+  <!-- ══════════ MOBILE: drawer overlay + bottom nav bar (app-like) ══════════ -->
+  <div class="drawer-overlay" id="drawerOverlay"></div>
+  <nav class="tabbar" id="tabBar" aria-label="Primary">
+    <button id="tabDashboard" data-view="dashboard" title="Dashboard — all projects at a glance"><span class="tb-ico">📊</span><span class="tb-lbl">Dashboard</span></button>
+    <button id="tabChecklist" data-view="checklist" class="on" title="Checklist — current project tasks"><span class="tb-ico">✓</span><span class="tb-lbl">Checklist</span></button>
+    <button id="tabNew" title="Create a new project"><span class="tb-ico tb-plus">＋</span><span class="tb-lbl">New</span></button>
+    <button id="tabDb" title="Connect / save local database"><span class="tb-ico">💾</span><span class="tb-lbl">DB</span></button>
+    <button id="tabMenu" title="Open menu"><span class="tb-ico">☰</span><span class="tb-lbl">Menu</span></button>
+  </nav>
 
   <!-- ══════════ LAUNCH WIZARD — company branding setup ══════════ -->
   <div class="wizard" id="launchWizard">
@@ -2202,6 +2300,38 @@
   });
   document.getElementById("btnSettings").addEventListener("click", openWizard);
   document.getElementById("btnViewWizard").addEventListener("click", openWizard);
+
+  /* ── Mobile: drawer + bottom nav bar ────────────────────────────────── */
+  var $drawerOverlay = document.getElementById("drawerOverlay");
+  var $btnMenu = document.getElementById("btnMenu");
+  var $side = document.querySelector(".side");
+  function openDrawer() { $side.classList.add("open"); $drawerOverlay.classList.add("show"); document.body.style.overflow = "hidden"; }
+  function closeDrawer() { $side.classList.remove("open"); $drawerOverlay.classList.remove("show"); document.body.style.overflow = ""; }
+  $btnMenu.addEventListener("click", openDrawer);
+  $drawerOverlay.addEventListener("click", closeDrawer);
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape") closeDrawer(); });
+  /* lè yo chwazi yon pwojè nan drawer la → fèmen l */
+  document.getElementById("sideProjects").addEventListener("click", function () { if (window.innerWidth <= 900) closeDrawer(); });
+  /* tabs: Dashboard / Checklist / New / DB / Menu */
+  document.getElementById("tabDashboard").addEventListener("click", function () { setView("dashboard"); closeDrawer(); });
+  document.getElementById("tabChecklist").addEventListener("click", function () { setView("checklist"); closeDrawer(); });
+  document.getElementById("tabNew").addEventListener("click", function () { openNameModal("new"); });
+  document.getElementById("tabDb").addEventListener("click", function () { document.getElementById("btnDbConnect").click(); });
+  document.getElementById("tabMenu").addEventListener("click", openDrawer);
+  /* reflète tab aktif nan bottom nav la lè view chanje */
+  var $tabs = document.querySelectorAll("#tabBar button[data-view]");
+  function renderTabs() {
+    var activeView = currentView === "dashboard" ? "dashboard" : "checklist";
+    $tabs.forEach(function (t) { t.classList.toggle("on", t.dataset.view === activeView); });
+    var active = document.getElementById("tabBar").querySelector("button.on");
+    if (active && active.id !== "tabChecklist" && active.id !== "tabDashboard") {
+      document.getElementById("tabChecklist").classList.add("on");
+    }
+  }
+  var _origSetView = setView;
+  setView = function (v) { _origSetView(v); renderTabs(); };
+  renderTabs();
+
   $wizCompany.addEventListener("input", function () {
     document.getElementById("wizBrandPrev").textContent = $wizCompany.value.trim() || "JRiSpace";
   });
