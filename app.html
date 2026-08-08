@@ -31,6 +31,41 @@
     --shadow: 0 8px 24px rgba(1, 65, 194, .18);
     --glass: rgba(255, 255, 255, .92);
   }
+
+  /* ── Dark mode: [data-theme="dark"] sou <html> ──────────────────────── */
+  [data-theme="dark"] {
+    --card: #0f172a;
+    --ink: #e2e8f0;
+    --muted: #94a3b8;
+    --brand-soft: #16233b;
+    --border: #243349;
+    --glass: rgba(13, 20, 36, .92);
+    --shadow: 0 8px 24px rgba(0, 0, 0, .45);
+  }
+  [data-theme="dark"] body { background: linear-gradient(160deg, #060b16 0%, #0b1f3a 55%, #12305c 100%); }
+  [data-theme="dark"] .phase,
+  [data-theme="dark"] .card,
+  [data-theme="dark"] .g-item,
+  [data-theme="dark"] .modal,
+  [data-theme="dark"] .sideSheet,
+  [data-theme="dark"] .wiz-card,
+  [data-theme="dark"] .overlay-panel { background: var(--card); }
+  [data-theme="dark"] input,
+  [data-theme="dark"] select,
+  [data-theme="dark"] textarea { background: #0b1220; color: var(--ink); border-color: var(--border); }
+  [data-theme="dark"] input::placeholder { color: #64748b; }
+  [data-theme="dark"] .phase { box-shadow: 0 4px 18px rgba(0, 0, 0, .35); }
+  [data-theme="dark"] .ss-meta .kv,
+  [data-theme="dark"] .ss-notes,
+  [data-theme="dark"] .subtask-input { background: #0b1220; }
+  [data-theme="dark"] .summary .search-row input { background: #0b1220; }
+  [data-theme="dark"] .pchip { background: rgba(255, 255, 255, .08); color: #cbd5e1; }
+  [data-theme="dark"] .tabbar { background: rgba(10, 15, 28, .96); border-top-color: #1e293b; }
+  [data-theme="dark"] .tabbar button { color: #94a3b8; }
+  [data-theme="dark"] .tabbar button.on { color: #60a5fa; }
+  [data-theme="dark"] .chip-warn { background: #3b2f10; color: #fbbf24; }
+  [data-theme="dark"] .chip-bad { background: #3f1215; color: #fca5a5; }
+  [data-theme="dark"] li.task:hover { background: linear-gradient(90deg, rgba(22, 35, 59, .7), rgba(15, 23, 42, 0)); }
   * { box-sizing: border-box; }
   html, body { margin: 0; padding: 0; }
   body {
@@ -184,6 +219,14 @@
     border-radius: var(--radius);
     box-shadow: var(--shadow); padding: 16px 20px; margin-bottom: 18px;
   }
+  .search-row { grid-column: 1 / -1; }
+  .search-row input {
+    width: 100%; font: inherit; font-size: 14px; padding: 10px 14px;
+    border: 1px solid var(--border); border-radius: 10px; outline: none;
+    background: #fff; color: var(--ink); transition: border-color .15s, box-shadow .15s;
+  }
+  .search-row input:focus { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(11, 99, 246, .15); }
+  .search-row input::placeholder { color: var(--muted); }
   .summary .gauge { display: flex; align-items: center; gap: 12px; min-width: 0; }
   .summary .pct {
     font-size: 24px; font-weight: 700;
@@ -245,6 +288,13 @@
   li.task .t-label { flex: 1; font-size: 14px; word-break: break-word; }
   li.task.done .t-label { color: var(--muted); text-decoration: line-through; }
   li.task .t-notes { color: var(--muted); font-size: 12px; margin-top: 2px; }
+  li.task .t-meta { display: flex; gap: 8px; align-items: center; margin-bottom: 2px; }
+  li.task .t-meta .prio { font-size: 11px; line-height: 1; }
+  li.task .t-meta .due { font-size: 11px; color: var(--muted); font-weight: 600; }
+  li.task .t-meta .due.overdue { color: var(--danger); }
+  li.task.overdue { border-left: 3px solid var(--danger); }
+  li.task.overdue .t-label { color: #b91c1c; }
+  li.task:focus-visible { outline: 2px solid var(--brand); outline-offset: -2px; }
   li.task .t-btns { display: flex; gap: 6px; opacity: 0; transition: opacity .12s; flex-shrink: 0; }
   li.task:hover .t-btns { opacity: 1; }
   .t-btns button { padding: 4px 9px; font-size: 12px; border-radius: 7px; }
@@ -446,12 +496,10 @@
 
   footer { text-align: center; color: var(--muted); font-size: 12px; margin-top: 34px; }
   footer b { color: var(--ink); }
-  .toast {
-    position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%) translateY(20px);
-    background: var(--ink); color: #fff; padding: 10px 18px; border-radius: 10px; font-size: 13px;
-    opacity: 0; pointer-events: none; transition: opacity .2s, transform .2s; z-index: 60; max-width: 90vw; text-align: center;
-  }
-  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  .toast { position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%) translateY(80px); background: #0b1220; color: #fff; padding: 11px 18px; border-radius: 12px; font-size: 13.5px; font-weight: 600; box-shadow: 0 10px 30px rgba(0, 0, 0, .35); opacity: 0; transition: transform .25s ease, opacity .25s ease; z-index: 1200; display: flex; align-items: center; gap: 10px; max-width: min(92vw, 560px); }
+  .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+  .toast .toast-undo { background: var(--brand); color: #fff; border: none; border-radius: 8px; padding: 6px 14px; font-size: 12.5px; font-weight: 800; cursor: pointer; flex-shrink: 0; }
+  .toast .toast-undo:hover { background: var(--brand-dark); }
   @media (max-width: 900px) {
     .wrap { flex-direction: column; }
     .side { width: 100%; position: static; max-height: none; }
@@ -652,30 +700,35 @@
       </div>
 
       <nav class="views" id="viewNav">
-        <button id="btnViewDashboard">📊 Dashboard</button>
-        <button id="btnViewChecklist">✓ Checklist</button>
-        <button id="btnViewWizard" class="wiz-link" title="Re-open the setup wizard (branding + root folder)">🚀 Setup wizard</button>
+        <button id="btnViewDashboard" data-i18n="navDashboard">📊 Dashboard</button>
+        <button id="btnViewChecklist" data-i18n="navChecklist">✓ Checklist</button>
+        <button id="btnViewWizard" class="wiz-link" title="Re-open the setup wizard (branding + root folder)" data-i18n="navWizard">🚀 Setup wizard</button>
       </nav>
 
       <div class="side-sec">
-        <div class="side-label">📁 Root</div>
+        <div class="side-label" data-i18n="rootLabel">📁 Root</div>
         <input type="text" id="folderInput" value="~/Projects" placeholder="~/Projects" readonly title="Root is set automatically by “Scan folder” — click the button to open the folder picker." />
-        <button id="btnScanFolder" class="primary" title="Open the system folder picker (Finder on macOS / Explorer on Windows) and import every subproject's checklist.json">Scan folder</button>
+        <button id="btnScanFolder" class="primary" title="Open the system folder picker (Finder on macOS / Explorer on Windows) and import every subproject's checklist.json" data-i18n="btnScan">Scan folder</button>
       </div>
 
       <div class="side-sec grow">
         <div class="side-label">
-          <span>🚀 Projects</span>
-          <button id="btnNewProject" class="mini primary" title="Add a new project with the default template">+ New</button>
+          <span data-i18n="projectsLabel">🚀 Projects</span>
+          <button id="btnNewProject" class="mini primary" title="Add a new project with the default template" data-i18n="btnNew">+ New</button>
         </div>
         <div id="sideProjects"></div>
       </div>
 
       <div class="side-foot">
         <button id="btnDbConnect" class="mini primary" title="Save all data to a local database file on your computer (survives clearing browser cache)">💾 Connect DB</button>
+        <button id="btnDbBackup" class="mini" title="Create a timestamped backup copy of the local database file on disk">🗄 Backup</button>
+        <button id="btnDbRestore" class="mini" title="Restore the local database from a backup file">♻ Restore</button>
         <button id="btnSettings" class="mini" title="Re-open the launch wizard to change the company name">⚙ Brand</button>
-        <button id="btnRenameProject" class="mini" title="Rename the current project">Rename</button>
-        <button id="btnDeleteProject" class="mini ghost-danger" title="Delete the current project (localStorage only)">Delete</button>
+        <button id="btnRenameProject" class="mini" title="Rename the current project" data-i18n="btnRename">Rename</button>
+        <button id="btnDupProject" class="mini" title="Create a copy of the current project with all its tasks">⧉ Duplicate</button>
+        <button id="btnTheme" class="mini" title="Toggle dark / light mode">🌙 Dark</button>
+        <button id="btnLang" class="mini" title="Switch language (English / Kreyòl / Français)">🌐 EN</button>
+        <button id="btnDeleteProject" class="mini ghost-danger" title="Delete the current project (localStorage only)" data-i18n="btnDelete">Delete</button>
         <div class="badge" id="dbBadge">💾 …</div>
         <div class="badge" id="sideBadge">v2.3 · JRiSpace | Sylvenson Richard</div>
       </div>
@@ -696,6 +749,9 @@
         <div class="track"><div id="globalTrack"></div></div>
       </div>
       <div class="counts" id="globalCounts">0 / 0 tasks</div>
+      <div class="search-row">
+        <input id="taskSearch" type="search" placeholder="🔍 Search tasks… (all projects)" autocomplete="off" aria-label="Search tasks across all projects" />
+      </div>
       <div class="actions">
         <button id="btnExport" title="Download this project's checklist as JSON">Export</button>
         <button id="btnImport" title="Load a checklist JSON file into this project">Import</button>
@@ -1167,7 +1223,12 @@
       if (!text) return false;
       var data = JSON.parse(text);
       if (!data || !data.projects) return false;
-      registry.projects = data.projects;
+      /* Merge (pa ranplase): DB file a se ground truth, men pwojè ki
+         nan cache a men ki pa nan file a pa dwe pèdi (eg. file a pi ansyen) */
+      var diskKeys = {};
+      data.projects.forEach(function (p) { diskKeys[p.key] = true; });
+      var cacheOnly = registry.projects.filter(function (p) { return !diskKeys[p.key]; });
+      registry.projects = data.projects.concat(cacheOnly);
       registry.folder = data.folder || registry.folder;
       if (data.config) config = Object.assign({}, config, data.config);
       Object.keys(data.data || {}).forEach(function (key) {
@@ -1279,6 +1340,70 @@
     } catch (e) { return false; }
   }
 
+  /* Backup: kopye DB file la ak yon timestamp (rete nan menm folder a) */
+  async function dbBackup() {
+    if (!db.ready || !db.rootHandle) {
+      showToast("Connect the database first (💾 Connect DB)");
+      return false;
+    }
+    try {
+      var fh = await db.rootHandle.getFileHandle(DB_FILE, { create: false });
+      var f = await fh.getFile();
+      var content = await f.text();
+      var stamp = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
+      var backupName = DB_FILE.replace(/\.db$/, "") + "-backup-" + stamp + ".db";
+      var bfh = await db.rootHandle.getFileHandle(backupName, { create: true });
+      var w = await bfh.createWritable();
+      await w.write(content);
+      await w.close();
+      showToast("🗄 Backup created: " + backupName);
+      return true;
+    } catch (e) {
+      showToast("Backup failed: " + (e && e.message ? e.message : e));
+      return false;
+    }
+  }
+
+  /* Restore: user chwazi yon fichye .db → ranplase DB file la epi re-chaje tout */
+  async function dbRestoreFromFile(file) {
+    if (!file) return false;
+    try {
+      var text = await file.text();
+      var data = JSON.parse(text);
+      if (!data || data.format !== "jrispace-pm") throw new Error("Not a jrispace-pm database file");
+      /* Ekri nan disk (si DB konekte) */
+      if (db.ready && db.rootHandle) {
+        var fh = await db.rootHandle.getFileHandle(DB_FILE, { create: true });
+        var w = await fh.createWritable();
+        await w.write(text);
+        await w.close();
+      }
+      /* Aplike nan memwa + cache */
+      registry.projects = data.projects || [];
+      if (data.config) config = Object.assign({}, config, data.config);
+      saveConfig();
+      Object.keys(data.data || {}).forEach(function (key) {
+        try { localStorage.setItem(dataKey(key), JSON.stringify(data.data[key])); } catch (e) {}
+      });
+      Object.keys(localStorage).forEach(function (k) {
+        if (k.indexOf("jrispace.checklist.v2.") === 0) {
+          var key = k.slice("jrispace.checklist.v2.".length);
+          if (!data.data || !data.data[key]) { try { localStorage.removeItem(k); } catch (e) {} }
+        }
+      });
+      if (registry.projects.length) switchTo(registry.projects[0].key);
+      else { current = null; renderAll(); }
+      saveRegistry();
+      renderSidebar();
+      renderDbBadge();
+      showToast("♻ Database restored: " + (file.name || "backup") + " (" + registry.projects.length + " projects)");
+      return true;
+    } catch (e) {
+      showToast("Restore failed: " + (e && e.message ? e.message : e));
+      return false;
+    }
+  }
+
   /* Endikatè UI: kote done yo ye */
   function renderDbBadge() {
     var el = document.getElementById("dbBadge");
@@ -1354,6 +1479,7 @@
     $folderInput.value = registry.folder || "~/Projects";
   }
 
+  var searchQuery = "";
   function renderPhases() {
     $phases.innerHTML = "";
     if (!current || !current.data.phases.length) {
@@ -1390,19 +1516,51 @@
       var ul = document.createElement("ul");
       ul.className = "tasks";
       phase.tasks.forEach(function (task, ti) {
+        if (searchQuery) {
+          var hay = ((task.text || "") + " " + (task.notes || "") + " " + (phase.name || "")).toLowerCase();
+          if (hay.indexOf(searchQuery) < 0) return;
+        }
         var li = document.createElement("li");
-        li.className = "task" + (task.done ? " done" : "");
+        li.className = "task" + (task.done ? " done" : "") + (isOverdue(task) ? " overdue" : "");
         li.classList.add("task-row-click");
+        li.setAttribute("role", "button");
+        li.setAttribute("tabindex", "0");
+        li.setAttribute("aria-label", (task.done ? "Done: " : "Open: ") + (task.text || ""));
 
         var cb = document.createElement("input");
         cb.type = "checkbox";
         cb.checked = !!task.done;
+        cb.setAttribute("aria-label", "Mark done: " + (task.text || ""));
         cb.addEventListener("click", function (e) { e.stopPropagation(); });
-        cb.addEventListener("change", function () { task.done = cb.checked; saveCurrent(); renderPhases(); });
+        cb.addEventListener("change", function () {
+          task.done = cb.checked;
+          if (task.done && navigator.vibrate) navigator.vibrate(10);
+          saveCurrent(); renderPhases();
+        });
 
         var label = document.createElement("div");
         label.className = "t-label";
-        label.textContent = task.text || "";
+        var prio = prioLabel(task.priority);
+        if (prio || task.dueDate) {
+          var meta = document.createElement("div");
+          meta.className = "t-meta";
+          if (prio) {
+            var pb = document.createElement("span");
+            pb.className = "prio p-" + task.priority;
+            pb.textContent = prio;
+            pb.title = "Priority: " + task.priority;
+            meta.appendChild(pb);
+          }
+          if (task.dueDate) {
+            var db = document.createElement("span");
+            db.className = "due" + (isOverdue(task) ? " overdue" : "");
+            db.textContent = "📅 " + task.dueDate + (isOverdue(task) ? " ⚠" : "");
+            db.title = isOverdue(task) ? "Overdue" : "Due date";
+            meta.appendChild(db);
+          }
+          label.appendChild(meta);
+        }
+        label.appendChild(document.createTextNode(task.text || ""));
         if (task.notes) {
           var n = document.createElement("div");
           n.className = "t-notes";
@@ -1426,9 +1584,15 @@
         var btnDel = document.createElement("button");
         btnDel.className = "del"; btnDel.textContent = "✕";
         btnDel.title = "Delete task";
+        btnDel.setAttribute("aria-label", "Delete task: " + (task.text || ""));
         btnDel.addEventListener("click", function (e) {
           e.stopPropagation();
+          var saved = { pi: pi, ti: ti, task: JSON.parse(JSON.stringify(task)) };
           phase.tasks.splice(ti, 1); saveCurrent(); renderPhases();
+          pushUndo("Task deleted", function () {
+            current.data.phases[saved.pi].tasks.splice(Math.min(saved.ti, current.data.phases[saved.pi].tasks.length), 0, saved.task);
+            saveCurrent(); renderPhases();
+          });
         });
         btns.appendChild(btnEdit);
         btns.appendChild(btnDel);
@@ -1437,6 +1601,31 @@
         li.addEventListener("click", function () {
           openTaskSheet(pi, ti);
         });
+
+        /* Swipe left (mobil) → delete task ak undo */
+        (function (li, pi, ti, task) {
+          var x0 = null, y0 = null;
+          li.addEventListener("touchstart", function (e) {
+            x0 = e.touches[0].clientX; y0 = e.touches[0].clientY;
+          }, { passive: true });
+          li.addEventListener("touchend", function (e) {
+            if (x0 === null) return;
+            var dx = e.changedTouches[0].clientX - x0;
+            var dy = e.changedTouches[0].clientY - y0;
+            if (dx < -70 && Math.abs(dy) < 40) {
+              e.preventDefault();
+              var saved = { pi: pi, ti: ti, task: JSON.parse(JSON.stringify(task)) };
+              current.data.phases[pi].tasks.splice(ti, 1);
+              saveCurrent(); renderPhases();
+              if (navigator.vibrate) navigator.vibrate([12, 40, 12]);
+              pushUndo("Task deleted", function () {
+                current.data.phases[saved.pi].tasks.splice(Math.min(saved.ti, current.data.phases[saved.pi].tasks.length), 0, saved.task);
+                saveCurrent(); renderPhases();
+              });
+            }
+            x0 = null; y0 = null;
+          }, { passive: false });
+        })(li, pi, ti, task);
 
         li.appendChild(cb);
         li.appendChild(label);
@@ -1479,7 +1668,12 @@
       delBtn.addEventListener("click", function (e) {
         e.stopPropagation();
         if (confirm('Delete phase "' + phase.name + '" and all its tasks?')) {
+          var saved = { pi: pi, phase: JSON.parse(JSON.stringify(phase)) };
           current.data.phases.splice(pi, 1); saveCurrent(); renderPhases();
+          pushUndo('Phase "' + saved.phase.name + '" deleted', function () {
+            current.data.phases.splice(Math.min(saved.pi, current.data.phases.length), 0, saved.phase);
+            saveCurrent(); renderPhases();
+          });
         }
       });
       delPhase.appendChild(delBtn);
@@ -1546,6 +1740,21 @@
       '<input id="mText" type="text" value="' + (task ? esc(task.text) : "") + '" placeholder="Task description" />' +
       '<label style="font-size:12.5px;color:var(--muted);display:block;margin-bottom:4px;">Notes (optional)</label>' +
       '<textarea id="mNotes" placeholder="Optional notes…">' + (task && task.notes ? esc(task.notes) : "") + '</textarea>' +
+      '<div style="display:flex;gap:10px;margin-bottom:12px;">' +
+        '<div style="flex:1;">' +
+          '<label style="font-size:12.5px;color:var(--muted);display:block;margin-bottom:4px;">Due date (optional)</label>' +
+          '<input id="mDue" type="date" value="' + (task && task.dueDate ? esc(task.dueDate) : "") + '" style="width:100%;font:inherit;padding:9px 12px;border:1px solid var(--border);border-radius:9px;outline:none;background:#fff;color:var(--ink);" />' +
+        '</div>' +
+        '<div style="flex:1;">' +
+          '<label style="font-size:12.5px;color:var(--muted);display:block;margin-bottom:4px;">Priority</label>' +
+          '<select id="mPriority" style="width:100%;font:inherit;padding:9px 12px;border:1px solid var(--border);border-radius:9px;outline:none;background:#fff;color:var(--ink);">' +
+            '<option value="">None</option>' +
+            '<option value="high"' + (task && task.priority === "high" ? " selected" : "") + '>🔴 High</option>' +
+            '<option value="med"' + (task && task.priority === "med" ? " selected" : "") + '>🟠 Medium</option>' +
+            '<option value="low"' + (task && task.priority === "low" ? " selected" : "") + '>🟢 Low</option>' +
+          '</select>' +
+        '</div>' +
+      '</div>' +
       '<div class="m-actions">' +
         '<button id="mCancel">Cancel</button>' +
         '<button id="mSave" class="primary">Save</button>' +
@@ -1560,14 +1769,20 @@
       if (!v) { $text.focus(); return; }
       var pIdx = parseInt(document.getElementById("mPhase").value, 10);
       var notes = document.getElementById("mNotes").value.trim() || undefined;
-      if (task) { task.text = v; task.notes = notes; task.updatedAt = new Date().toISOString(); }
+      var due = document.getElementById("mDue").value || undefined;
+      var prio = document.getElementById("mPriority").value || undefined;
+      if (task) {
+        task.text = v; task.notes = notes; task.updatedAt = new Date().toISOString();
+        task.dueDate = due; task.priority = prio;
+      }
       else {
         current.data.phases[pIdx].tasks.push({
           text: v, done: false, notes: notes,
           createdAt: new Date().toISOString(),
           createdBy: config.company || "Me",
           scope: current.data.phases[pIdx].name,
-          status: "open"
+          status: "open",
+          dueDate: due, priority: prio
         });
       }
       saveCurrent(); closeModal(); renderPhases();
@@ -1587,6 +1802,12 @@
     if (isNaN(d.getTime())) return iso;
     return d.toLocaleString(undefined, { year: "numeric", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
   }
+  function todayISO() {
+    var d = new Date();
+    return d.getFullYear() + "-" + ("0" + (d.getMonth() + 1)).slice(-2) + "-" + ("0" + d.getDate()).slice(-2);
+  }
+  function prioLabel(p) { return { high: "🔴", med: "🟠", low: "🟢" }[p] || ""; }
+  function isOverdue(t) { return t.dueDate && !t.done && t.dueDate < todayISO(); }
   function statusBadgeClass(status) {
     if (status === "done") return "done";
     if (status === "blocked") return "blocked";
@@ -1594,7 +1815,8 @@
     return "open";
   }
   function statusLabel(status) {
-    return { open: "Open", progress: "In progress", done: "Done", blocked: "Blocked" }[status] || "Open";
+    var map = { open: t("stOpen"), progress: t("stProgress"), done: t("stDone"), blocked: t("stBlocked") };
+    return map[status] || t("stOpen");
   }
   function taskStatus(task) {
     if (task.status) return task.status;
@@ -1612,6 +1834,13 @@
     var createdBy = task.createdBy || config.company || "—";
     var scope = task.scope || phase.name || "—";
     var status = taskStatus(task);
+    var prioLabel = task.priority ? t("pr" + { high: "High", med: "Med", low: "Low" }[task.priority]) : null;
+    var isOverdue = task.dueDate && !task.done && task.dueDate < todayISO();
+    var dueCell = task.dueDate
+      ? (isOverdue
+          ? '<span class="due overdue">⚠ ' + task.dueDate + '</span>'
+          : '<span class="due">📅 ' + task.dueDate + '</span>')
+      : "—";
 
     var head =
       '<div class="ss-head">' +
@@ -1629,6 +1858,8 @@
         '<div class="kv"><b>Created by</b><span>' + esc(createdBy) + '</span></div>' +
         '<div class="kv"><b>Created at</b><span>' + fmtDate(task.createdAt) + '</span></div>' +
         '<div class="kv"><b>Status</b><span>' + statusLabel(status) + '</span></div>' +
+        (prioLabel ? '<div class="kv"><b>Priority</b><span>' + prioLabel + '</span></div>' : "") +
+        '<div class="kv"><b>Due date</b><span>' + dueCell + '</span></div>' +
         '<div class="kv"><b>Updated at</b><span>' + fmtDate(task.updatedAt) + '</span></div>' +
       '</div>' +
       (task.desc ? '<div class="ss-desc">' + esc(task.desc) + '</div>' : "");
@@ -1719,8 +1950,13 @@
     document.getElementById("ssEdit").addEventListener("click", function () { closeSheet(); openTaskModal(sheetCtx.pi, sheetCtx.ti); });
     document.getElementById("ssDel").addEventListener("click", function () {
       if (!confirm("Delete this task?")) return;
+      var saved = { pi: sheetCtx.pi, ti: sheetCtx.ti, task: JSON.parse(JSON.stringify(task)) };
       current.data.phases[sheetCtx.pi].tasks.splice(sheetCtx.ti, 1);
       saveCurrent(); closeSheet(); renderPhases();
+      pushUndo("Task deleted", function () {
+        current.data.phases[saved.pi].tasks.splice(Math.min(saved.ti, current.data.phases[saved.pi].tasks.length), 0, saved.task);
+        saveCurrent(); renderPhases();
+      });
     });
   }
 
@@ -1786,9 +2022,29 @@
   document.getElementById("btnNewProject").addEventListener("click", function () { openNameModal("new"); });
   document.getElementById("btnRenameProject").addEventListener("click", function () { openNameModal("rename"); });
 
+  /* Duplicate: kopi konplè pwojè aktyèl la (tasks, notes, priority, due dates) */
+  document.getElementById("btnDupProject").addEventListener("click", function () {
+    if (!current) return;
+    var base = current.name + " (copy)";
+    var key = slug(base);
+    var suffix = 2;
+    while (findProject(key)) key = slug(base) + "-" + (suffix++);
+    var copy = JSON.parse(JSON.stringify(current.data));
+    copy.updatedAt = new Date().toISOString();
+    copy._profileSynced = true; /* pa re-sync ankò */
+    var p = { key: key, name: base };
+    registry.projects.push(p);
+    saveRegistry();
+    try { localStorage.setItem(dataKey(key), JSON.stringify(copy)); } catch (e) {}
+    switchTo(key);
+    if (db.ready && db.rootHandle) dbCreateProjectFolder(key, base);
+    showToast('⧉ Project duplicated as "' + base + '"');
+  });
+
   document.getElementById("btnDeleteProject").addEventListener("click", function () {
     if (!current) return;
     if (!confirm('Delete project "' + current.name + '"?\n\nThis removes its checklist data from this browser.')) return;
+    var saved = { key: current.key, name: current.name, data: JSON.parse(JSON.stringify(current.data)) };
     localStorage.removeItem(dataKey(current.key));
     var idx = -1;
     for (var i = 0; i < registry.projects.length; i++) if (registry.projects[i].key === current.key) idx = i;
@@ -1797,7 +2053,14 @@
     current = null;
     if (registry.projects.length) switchTo(registry.projects[0].key);
     else { migrateLegacyIfNeeded(); switchTo(registry.projects[0].key); }
-    showToast("Project deleted");
+    pushUndo('Project "' + saved.name + '" deleted', function () {
+      if (!findProject(saved.key)) {
+        registry.projects.push({ key: saved.key, name: saved.name });
+        try { localStorage.setItem(dataKey(saved.key), JSON.stringify(saved.data)); } catch (e) {}
+      }
+      saveRegistry();
+      switchTo(saved.key);
+    });
   });
 
   /* Scan a folder: import every subproject (reads each folder's checklist.json) */
@@ -1907,6 +2170,15 @@
     setTimeout(function () { $name.focus(); }, 30);
   });
 
+  /* ── Search: filtre tasks yo (nan pwojè aktyèl la) ─────────────────── */
+  var $taskSearch = document.getElementById("taskSearch");
+  if ($taskSearch) {
+    $taskSearch.addEventListener("input", function () {
+      searchQuery = $taskSearch.value.trim().toLowerCase();
+      renderPhases();
+    });
+  }
+
   document.getElementById("btnReset").addEventListener("click", function () {
     if (!current) return;
     if (confirm('Reset the checklist for "' + current.name + '" to the default JRiSpace template?')) {
@@ -1949,11 +2221,32 @@
   });
 
   /* ── Toast ──────────────────────────────────────────────────────────── */
-  function showToast(msg) {
+  function showToast(msg, undoFn) {
     $toast.textContent = msg;
     $toast.classList.add("show");
+    if (undoFn) {
+      var u = document.createElement("button");
+      u.className = "toast-undo";
+      u.textContent = "Undo";
+      u.addEventListener("click", function () {
+        $toast.classList.remove("show");
+        undoFn();
+      });
+      $toast.appendChild(u);
+    }
     if (toastTimer) clearTimeout(toastTimer);
-    toastTimer = setTimeout(function () { $toast.classList.remove("show"); }, 3000);
+    toastTimer = setTimeout(function () { $toast.classList.remove("show"); }, 4000);
+  }
+
+  /* ── Undo stack: delete operations yo ka restore ───────────────────── */
+  var undoStack = [];
+  function pushUndo(label, restoreFn) {
+    undoStack.push({ label: label, fn: restoreFn });
+    if (undoStack.length > 10) undoStack.shift();
+    showToast(label + " — ", function () {
+      var op = undoStack.pop();
+      if (op) op.fn();
+    });
   }
 
   /* ── Dashboard: charts & reports for ALL projects ──────────────────── */
@@ -2298,6 +2591,17 @@
       if (ok && current) { renderAll(); }
     });
   });
+  document.getElementById("btnDbBackup").addEventListener("click", function () { dbBackup(); });
+  document.getElementById("btnDbRestore").addEventListener("click", function () {
+    /* chwazi yon fichye .db backup → restore */
+    var inp = document.createElement("input");
+    inp.type = "file";
+    inp.accept = ".db,.json,application/json,application/octet-stream";
+    inp.onchange = function () {
+      if (inp.files && inp.files[0]) dbRestoreFromFile(inp.files[0]);
+    };
+    inp.click();
+  });
   document.getElementById("btnSettings").addEventListener("click", openWizard);
   document.getElementById("btnViewWizard").addEventListener("click", openWizard);
 
@@ -2338,6 +2642,108 @@
   $wizCompany.addEventListener("keydown", function (e) {
     if (e.key === "Enter") { e.preventDefault(); document.getElementById("wizFinish").click(); }
   });
+
+  /* ── Multi-tab sync: si yon lòt tab sove, re-chaje done yo ──────────── */
+  window.addEventListener("storage", function (e) {
+    if (!e.key) return;
+    if (e.key === REGISTRY_KEY || e.key.indexOf("jrispace.checklist.v2.") === 0) {
+      var was = current ? current.key : null;
+      registry = loadRegistry();
+      if (e.key === REGISTRY_KEY) renderSidebar();
+      if (was && findProject(was)) {
+        var p = findProject(was);
+        p.data = loadProjectData(p.key, p.name);
+        current = p;
+        renderAll();
+      } else if (registry.projects.length) {
+        switchTo(registry.projects[0].key);
+      }
+      showToast("🔄 Updated from another tab");
+    }
+  });
+
+  /* ── i18n: EN / HT / FR — strings UI kle yo ─────────────────────────── */
+  var L = {
+    en: {
+      navDashboard: "📊 Dashboard", navChecklist: "✓ Checklist", navWizard: "🚀 Setup wizard",
+      rootLabel: "📁 Root", btnScan: "Scan folder", projectsLabel: "🚀 Projects", btnNew: "+ New",
+      btnRename: "Rename", btnDelete: "Delete", btnDup: "⧉ Duplicate", btnBackup: "🗄 Backup",
+      btnRestore: "♻ Restore", btnBrand: "⚙ Brand", btnThemeDark: "🌙 Dark", btnThemeLight: "☀️ Light",
+      btnExport: "Export", btnImport: "Import", btnVerify: "⟳ Verify", btnAddPhase: "+ Phase", btnReset: "Reset",
+      searchPh: "🔍 Search tasks… (all projects)", counts: "tasks", lang: "🌐 EN",
+      stOpen: "Open", stProgress: "In progress", stDone: "Done", stBlocked: "Blocked",
+      prHigh: "🔴 High", prMed: "🟠 Medium", prLow: "🟢 Low", prNone: "None"
+    },
+    ht: {
+      navDashboard: "📊 Tablo", navChecklist: "✓ Lis tach", navWizard: "🚀 Asistan konfigirasyon",
+      rootLabel: "📁 Rasin", btnScan: "Analize katab", projectsLabel: "🚀 Pwojè", btnNew: "+ Nouvo",
+      btnRename: "Chanje non", btnDelete: "Efase", btnDup: "⧉ Kopi", btnBackup: "🗄 Sekirite",
+      btnRestore: "♻ Retabli", btnBrand: "⚙ Mak", btnThemeDark: "🌙 Fonse", btnThemeLight: "☀️ Klere",
+      btnExport: "Ekspòte", btnImport: "Enpòte", btnVerify: "⟳ Verifye", btnAddPhase: "+ Faz", btnReset: "Reyajiste",
+      searchPh: "🔍 Chèche tach… (tout pwojè)", counts: "tach", lang: "🌐 HT",
+      stOpen: "Louvri", stProgress: "Nan pwogrè", stDone: "Fèt", stBlocked: "Bloke",
+      prHigh: "🔴 Wo", prMed: "🟠 Mwayen", prLow: "🟢 Ba", prNone: "Okenn"
+    },
+    fr: {
+      navDashboard: "📊 Tableau de bord", navChecklist: "✓ Liste", navWizard: "🚀 Assistant",
+      rootLabel: "📁 Racine", btnScan: "Analyser dossier", projectsLabel: "🚀 Projets", btnNew: "+ Nouveau",
+      btnRename: "Renommer", btnDelete: "Supprimer", btnDup: "⧉ Dupliquer", btnBackup: "🗄 Sauvegarde",
+      btnRestore: "♻ Restaurer", btnBrand: "⚙ Marque", btnThemeDark: "🌙 Sombre", btnThemeLight: "☀️ Clair",
+      btnExport: "Exporter", btnImport: "Importer", btnVerify: "⟳ Vérifier", btnAddPhase: "+ Phase", btnReset: "Réinitialiser",
+      searchPh: "🔍 Rechercher tâches… (tous projets)", counts: "tâches", lang: "🌐 FR",
+      stOpen: "Ouvert", stProgress: "En cours", stDone: "Terminé", stBlocked: "Bloqué",
+      prHigh: "🔴 Haute", prMed: "🟠 Moyenne", prLow: "🟢 Basse", prNone: "Aucune"
+    }
+  };
+  function t(key) {
+    var l = L[config.lang] || L.en;
+    return l[key] != null ? l[key] : L.en[key];
+  }
+  function applyLang() {
+    var lang = config.lang || "en";
+    document.documentElement.lang = lang === "ht" ? "ht" : lang;
+    document.querySelectorAll("[data-i18n]").forEach(function (el) {
+      var key = el.getAttribute("data-i18n");
+      el.textContent = t(key);
+    });
+    var s = document.getElementById("taskSearch");
+    if (s) s.placeholder = t("searchPh");
+    var bl = document.getElementById("btnLang");
+    if (bl) bl.textContent = t("lang");
+    var bt = document.getElementById("btnTheme");
+    if (bt) bt.textContent = document.documentElement.getAttribute("data-theme") === "dark" ? t("btnThemeLight") : t("btnThemeDark");
+  }
+  var LANGS = ["en", "ht", "fr"];
+  var $btnLang = document.getElementById("btnLang");
+  if ($btnLang) {
+    $btnLang.addEventListener("click", function () {
+      var i = LANGS.indexOf(config.lang || "en");
+      config.lang = LANGS[(i + 1) % LANGS.length];
+      saveConfig();
+      applyLang();
+      showToast("Language: " + config.lang.toUpperCase());
+    });
+  }
+  if (!config.lang) config.lang = "en";
+  applyLang();
+
+  /* ── Dark mode toggle ───────────────────────────────────────────────── */
+  function applyTheme(theme) {
+    var dark = theme === "dark" || (theme === "auto" && window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
+    document.documentElement.setAttribute("data-theme", dark ? "dark" : "light");
+    var btn = document.getElementById("btnTheme");
+    if (btn) btn.textContent = dark ? "☀️ Light" : "🌙 Dark";
+  }
+  function toggleTheme() {
+    var cur = document.documentElement.getAttribute("data-theme") === "dark" ? "dark" : "light";
+    config.theme = cur === "dark" ? "light" : "dark";
+    saveConfig();
+    applyTheme(config.theme);
+  }
+  var $btnTheme = document.getElementById("btnTheme");
+  if ($btnTheme) $btnTheme.addEventListener("click", toggleTheme);
+  if (!config.theme) config.theme = "auto";
+  applyTheme(config.theme);
 
   /* ── Init ───────────────────────────────────────────────────────────── */
   migrateLegacyIfNeeded();
