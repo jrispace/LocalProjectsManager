@@ -4,53 +4,63 @@
 
 A 100% local project manager by **Sylvenson Richard** / **JRiSpace** — track every project, phase and task with a live dashboard, progress reports and system health. No account, no server, no tracking.
 
-![Privacy-first](https://img.shields.io/badge/privacy-100%25%20local-0d9488) ![License](https://img.shields.io/badge/license-JRiSpace-blue) ![Single file](https://img.shields.io/badge/single-file-HTML-brightgreen)
+![Privacy-first](https://img.shields.io/badge/privacy-100%25%20local-0d9488) ![Stack](https://img.shields.io/badge/stack-React%2019%20%2B%20Vite%206-blue) ![PWA](https://img.shields.io/badge/PWA-installable-brightgreen)
 
 ## 🚀 Quick start
 
-1. **Download** the latest release (zip) from the [Releases page](https://github.com/jrispace/LocalProjectsManager/releases) — or open the [landing page](https://jrispace.github.io/LocalProjectsManager/) and click **Download App**.
+**Use it**
+
+1. **Download** the latest release zip from the [Releases page](https://github.com/jrispace/LocalProjectsManager/releases).
 2. **Unzip** anywhere (double-click in Finder).
-3. **Double-click `app.html`** — it opens in your browser and works instantly. No install, no dependencies.
+3. **Double-click `lpm.command`** — it serves the app on `127.0.0.1` and opens your browser. Keep the Terminal window open while you use it.
+
+No install, no dependencies, no account. (The app itself is a web build: it needs a local server, which the launcher provides — that is also what makes the service worker and offline mode work.)
+
+**Develop it**
+
+```bash
+npm install
+npm run dev        # http://localhost:8080
+npm run typecheck
+npm run build      # -> dist/
+npm run release    # -> release/LocalProjectsManager.zip
+```
 
 ## 🔒 Privacy
 
-- Your data **never leaves your machine**. Everything is stored in your browser's **localStorage**.
+- Your data **never leaves your machine**: browser storage + an optional local database file (`jrispace-pm.db`) written through the File System Access API.
 - **No server, no cloud sync, no analytics, no accounts.**
-- Export a JSON backup any time (Export button) — if you clear browser data, projects are gone.
+- `Settings → Local Disk Database` connects a folder so changes survive clearing browser data; backup/restore and full JSON export live in the same screen.
 
 ## ✨ Features
 
-- **📊 Live Dashboard** — overall completion, progress per project, donut charts, KPI cards
-- **📁 Gallery view** — projects like a desktop folder: icon view + pagination
-- **🖥️ System Health card** — Mac health (policies, services, disk, battery, clutter) shown alongside projects
-- **🧩 Phases & tasks** — full project template: intake → plan → design → build → verify → deploy → report
-- **📦 Export / Import** — portable JSON backups
-- **🎨 Branded in 30s** — setup wizard names the workspace after your company
+- **📊 Live Dashboard** — overall completion, progress per project, donut charts, KPI cards, system health
+- **📁 Projects & phases** — intake → plan → design → build → verify → deploy → report template, custom phases, duplicate/rename
+- **✅ Tasks** — priorities, due dates, overdue badges, notes, sub-tasks, task side sheet, global task list
+- **🧩 Checklist view** — tick tasks per project, undo from the toast
+- **🔄 Scan folder** — pick `~/Projects`, every subfolder becomes a project, `checklist.json` files are imported
+- **⟳ Profile verify** — re-sync a project to its template: missing tasks are added, nothing is ever deleted
+- **💾 Disk database** — `jrispace-pm.db` in a folder you choose, plus backup / restore
+- **📤 Export / Import** — portable JSON backups
+- **🔁 Multi-tab sync** — changes propagate across tabs via BroadcastChannel
+- **📱 Installable PWA** — service worker, offline shell, mobile bottom nav + drawer
+- **🌍 i18n** — English, Kreyòl, Français · dark / light / auto theme
 
-## 💻 How it works
-
-| Step | Action |
-|------|--------|
-| 1 | Click **Scan folder** → pick `~/Projects` — every subfolder becomes a project |
-| 2 | Tick tasks, add phases, track progress |
-| 3 | Dashboard shows everything: health of your machine + health of your projects |
-
-## 🔄 Updates
-
-The landing page's **Download App** button always fetches the **latest release** from GitHub and downloads the zip directly in the page — no redirects. Click it any time to get the newest version.
-
-## 📂 Structure
+## 🗂 Structure
 
 ```
 LocalProjectsManager/
-├── index.html   # Landing page (privacy notice + download + instructions)
-├── app.html     # The app itself (single-file, self-contained)
-└── README.md
+├── src/                 # React app (pages, components, lib)
+├── public/              # icons, manifest, sw.js (copied to dist)
+├── scripts/             # package-release.sh
+├── lpm.command          # double-click launcher shipped in the release
+├── dist/                # build output (what ships)
+└── legacy/              # v1 single-file app (app.html + app.js) — archived, not shipped
 ```
 
-## 🏷️ Author
+## 🏷 Author
 
 - **Sylvenson Richard** — [sylvensonrichard.com](https://sylvensonrichard.com)
 - **JRiSpace** — [jrispace.com](https://jrispace.com)
 
-License: template for JRiSpace projects.
+License: template for Local Projects Manager projects.

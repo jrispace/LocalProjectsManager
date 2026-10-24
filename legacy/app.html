@@ -1,0 +1,1637 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0f172a">
+  <title>Local Projects Manager</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="icons/favicon-16.png">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <style>
+    /* ═══════════════════════════════════════════════════════════════════
+       EQUIP-STYLE DESIGN SYSTEM — Local Projects Manager
+       ═══════════════════════════════════════════════════════════════════ */
+
+    /* ── Reset & Base ────────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { height: 100%; -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
+    body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif; -webkit-font-smoothing: antialiased; overflow: hidden; }
+    img { max-width: 100%; display: block; }
+    button { cursor: pointer; font: inherit; border: none; background: none; color: inherit; }
+    input, select, textarea { font: inherit; color: inherit; }
+
+    /* ── Theme Variables (Equip Design System) ───────────────────────── */
+    :root {
+      --bg-primary: #0f172a;
+      --bg-secondary: #1e293b;
+      --bg-tertiary: #0f172a;
+      --bg-card: #1e293b;
+      --bg-card-hover: #334155;
+      --bg-input: #0f172a;
+      --bg-sidebar-from: #080d23;
+      --bg-sidebar-via: #0c1a3a;
+      --bg-sidebar-to: #0a0f25;
+      --text-primary: #f1f5f9;
+      --text-secondary: #94a3b8;
+      --text-muted: #64748b;
+      --text-accent: #06b6d4;
+      --border-primary: #334155;
+      --border-secondary: #475569;
+      --border-accent: #06b6d4;
+      --cyan-glow: rgba(34, 211, 238, 0.13);
+      --indigo-glow: rgba(99, 102, 241, 0.13);
+      --violet-glow: rgba(168, 85, 247, 0.09);
+      color-scheme: dark;
+    }
+    html.light {
+      --bg-primary: #f8fafc;
+      --bg-secondary: #f1f5f9;
+      --bg-tertiary: #e2e8f0;
+      --bg-card: #ffffff;
+      --bg-card-hover: #f1f5f9;
+      --bg-input: #ffffff;
+      --bg-sidebar-from: #f1f5f9;
+      --bg-sidebar-via: #f1f5f9;
+      --bg-sidebar-to: #e2e8f0;
+      --text-primary: #0f172a;
+      --text-secondary: #475569;
+      --text-muted: #94a3b8;
+      --text-accent: #0891b2;
+      --border-primary: #e2e8f0;
+      --border-secondary: #cbd5e1;
+      --border-accent: #0891b2;
+      --cyan-glow: rgba(8, 145, 178, 0.08);
+      --indigo-glow: rgba(99, 102, 241, 0.06);
+      --violet-glow: rgba(168, 85, 247, 0.05);
+      color-scheme: light;
+    }
+
+    /* ── Aurora Background (Main Content) ────────────────────────────── */
+    .aurora-bg {
+      background-color: var(--bg-primary);
+      background-image:
+        radial-gradient(700px circle at 12% 8%, var(--cyan-glow), transparent 60%),
+        radial-gradient(800px circle at 88% 15%, var(--indigo-glow), transparent 60%),
+        radial-gradient(1000px circle at 50% 95%, var(--violet-glow), transparent 60%);
+      background-attachment: fixed;
+    }
+    html.light .aurora-bg {
+      background-color: var(--bg-primary);
+      background-image:
+        radial-gradient(700px circle at 12% 8%, rgba(8, 145, 178, 0.06), transparent 60%),
+        radial-gradient(800px circle at 88% 15%, rgba(99, 102, 241, 0.04), transparent 60%),
+        radial-gradient(1000px circle at 50% 95%, rgba(168, 85, 247, 0.03), transparent 60%);
+    }
+
+    /* ── Glow Animations ────────────────────────────────────────────── */
+    @keyframes glow-pulse {
+      0%, 100% { text-shadow: 0 0 4px rgba(34, 211, 238, 0.3), 0 0 8px rgba(34, 211, 238, 0.2); }
+      50% { text-shadow: 0 0 8px rgba(34, 211, 238, 0.8), 0 0 16px rgba(34, 211, 238, 0.5), 0 0 24px rgba(99, 102, 241, 0.3); }
+    }
+    .animate-glow { animation: glow-pulse 2.5s ease-in-out infinite; }
+
+    @keyframes slide-in-right {
+      from { transform: translateX(100%); }
+      to { transform: translateX(0); }
+    }
+    .animate-slide-in-right { animation: slide-in-right 0.3s ease-out; }
+
+    @keyframes fade-in {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fade-in { animation: fade-in 0.2s ease-out; }
+
+    /* ── Layout ─────────────────────────────────────────────────────── */
+    .app-shell { display: flex; height: 100vh; height: 100dvh; background: var(--bg-primary); }
+
+    /* ── Sidebar ────────────────────────────────────────────────────── */
+    .sidebar {
+      display: flex;
+      flex-direction: column;
+      width: 240px;
+      background: linear-gradient(180deg, var(--bg-sidebar-from), var(--bg-sidebar-via) 50%, var(--bg-sidebar-to));
+      border-right: 1px solid rgba(6, 182, 212, 0.15);
+      transition: width 0.3s ease;
+      flex-shrink: 0;
+      height: 100vh;
+      height: 100dvh;
+      z-index: 50;
+    }
+    html.light .sidebar {
+      background: linear-gradient(180deg, #f1f5f9, #e2e8f0);
+      border-right: 1px solid var(--border-primary);
+    }
+    .sidebar.collapsed { width: 64px; }
+    .sidebar-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      height: 64px;
+      padding: 0 16px;
+      border-bottom: 1px solid rgba(6, 182, 212, 0.15);
+      flex-shrink: 0;
+    }
+    html.light .sidebar-header { border-bottom-color: var(--border-primary); }
+    .sidebar-logo {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      object-fit: contain;
+      flex-shrink: 0;
+    }
+    .sidebar-brand h1 {
+      font-size: 18px;
+      font-weight: 700;
+      background: linear-gradient(90deg, #22d3ee, #818cf8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      line-height: 1.2;
+    }
+    .sidebar-brand p {
+      font-size: 10px;
+      color: var(--text-muted);
+    }
+    .sidebar.collapsed .sidebar-brand { display: none; }
+
+    .sidebar-section-label {
+      padding: 12px 12px 4px;
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-muted);
+    }
+    .sidebar.collapsed .sidebar-section-label { display: none; }
+
+    .sidebar-nav {
+      flex: 1;
+      overflow-y: auto;
+      padding: 8px;
+    }
+    .sidebar-nav::-webkit-scrollbar { width: 4px; }
+    .sidebar-nav::-webkit-scrollbar-thumb { background: rgba(100,116,139,0.3); border-radius: 4px; }
+
+    .nav-section { margin-bottom: 8px; }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 14px;
+      color: var(--text-secondary);
+      transition: all 0.15s ease;
+      text-decoration: none;
+      cursor: pointer;
+      border: 1px solid transparent;
+    }
+    .nav-item:hover {
+      color: #f1f5f9;
+      background: rgba(255,255,255,0.05);
+    }
+    html.light .nav-item:hover { color: var(--text-primary); }
+    .nav-item.active {
+      background: linear-gradient(90deg, rgba(6,182,212,0.2), rgba(99,102,241,0.2));
+      color: #67e8f9;
+      border-color: rgba(6,182,212,0.2);
+    }
+    html.light .nav-item.active { color: var(--text-accent); }
+    .nav-item svg, .nav-item .nav-icon {
+      width: 18px;
+      height: 18px;
+      flex-shrink: 0;
+    }
+    .sidebar.collapsed .nav-item span:not(.nav-icon-text) { display: none; }
+    .sidebar.collapsed .nav-item { justify-content: center; padding: 8px; }
+
+    .sidebar-footer {
+      padding: 8px;
+      border-top: 1px solid rgba(6, 182, 212, 0.15);
+    }
+    html.light .sidebar-footer { border-top-color: var(--border-primary); }
+
+    /* ── Mobile Sidebar ─────────────────────────────────────────────── */
+    .mobile-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 40;
+    }
+    .mobile-overlay.show { display: block; }
+
+    /* ── Header ─────────────────────────────────────────────────────── */
+    .top-header {
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      border-bottom: 1px solid #1e293b;
+      background: rgba(15, 23, 42, 0.8);
+      backdrop-filter: blur(12px);
+      position: sticky;
+      top: 0;
+      z-index: 30;
+      flex-shrink: 0;
+    }
+    html.light .top-header {
+      border-bottom-color: var(--border-primary);
+      background: rgba(248, 250, 252, 0.8);
+    }
+    .header-left { display: flex; align-items: center; gap: 12px; }
+    .header-title { font-size: 15px; font-weight: 600; color: var(--text-primary); }
+    .header-right { display: flex; align-items: center; gap: 8px; }
+
+    .menu-toggle {
+      display: none;
+      color: var(--text-secondary);
+      padding: 6px;
+      border-radius: 8px;
+      transition: all 0.15s;
+    }
+    .menu-toggle:hover { color: var(--text-primary); background: rgba(255,255,255,0.05); }
+
+    .search-trigger {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 13px;
+      color: var(--text-muted);
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-primary);
+      transition: all 0.15s;
+    }
+    .search-trigger:hover { color: var(--text-secondary); border-color: var(--border-secondary); }
+    .search-trigger kbd {
+      font-size: 10px;
+      color: var(--text-muted);
+      background: var(--border-primary);
+      padding: 2px 6px;
+      border-radius: 4px;
+      margin-left: 32px;
+    }
+    html.light .search-trigger kbd { background: #e2e8f0; }
+
+    .theme-toggle {
+      color: var(--text-secondary);
+      padding: 6px;
+      border-radius: 8px;
+      transition: all 0.15s;
+    }
+    .theme-toggle:hover { color: var(--text-primary); background: rgba(255,255,255,0.05); }
+
+    .profile-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #06b6d4, #6366f1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 600;
+      color: white;
+      transition: all 0.15s;
+    }
+    .profile-btn:hover { box-shadow: 0 0 16px rgba(6,182,212,0.4); }
+
+    /* ── Profile Dropdown ───────────────────────────────────────────── */
+    .profile-dropdown {
+      position: absolute;
+      top: 52px;
+      right: 16px;
+      width: 220px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-primary);
+      border-radius: 12px;
+      padding: 8px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+      z-index: 60;
+      display: none;
+    }
+    .profile-dropdown.show { display: block; animation: fade-in 0.15s ease-out; }
+    .profile-dropdown-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px;
+      border-bottom: 1px solid var(--border-primary);
+      margin-bottom: 4px;
+    }
+    .profile-dropdown-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #06b6d4, #6366f1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: 600;
+      color: white;
+    }
+    .profile-dropdown-name { font-size: 13px; font-weight: 600; color: var(--text-primary); }
+    .profile-dropdown-role { font-size: 11px; color: var(--text-muted); }
+    .profile-dropdown-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px;
+      border-radius: 8px;
+      font-size: 13px;
+      color: var(--text-secondary);
+      transition: all 0.15s;
+      cursor: pointer;
+    }
+    .profile-dropdown-item:hover { background: rgba(255,255,255,0.05); color: var(--text-primary); }
+    html.light .profile-dropdown-item:hover { background: var(--bg-card-hover); }
+
+    /* ── Main Content ───────────────────────────────────────────────── */
+    .main-content {
+      flex: 1;
+      overflow-y: auto;
+      min-width: 0;
+    }
+
+    /* ── Page Container ─────────────────────────────────────────────── */
+    .page { padding: 24px; display: none; }
+    .page.active { display: block; animation: fade-in 0.2s ease-out; }
+
+    /* ── Cards ──────────────────────────────────────────────────────── */
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-primary);
+      border-radius: 12px;
+      padding: 20px;
+      transition: all 0.15s;
+    }
+    html.light .card { background: var(--bg-card); }
+    .card:hover { border-color: var(--border-secondary); }
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+    .card-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+    .card-subtitle {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    /* ── Stats Cards ────────────────────────────────────────────────── */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .stat-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-primary);
+      border-radius: 12px;
+      padding: 16px;
+      transition: all 0.15s;
+    }
+    .stat-card:hover { border-color: var(--border-secondary); }
+    .stat-label {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+    .stat-value {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+    .stat-value.cyan { color: var(--text-accent); }
+    .stat-value.indigo { color: #818cf8; }
+    .stat-value.violet { color: #a78bfa; }
+    .stat-value.emerald { color: #34d399; }
+
+    /* ── Progress Bar ───────────────────────────────────────────────── */
+    .progress-bar {
+      height: 6px;
+      background: var(--border-primary);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      border-radius: 3px;
+      background: linear-gradient(90deg, #06b6d4, #6366f1);
+      transition: width 0.5s ease;
+    }
+
+    /* ── Buttons ────────────────────────────────────────────────────── */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      transition: all 0.15s;
+      border: 1px solid transparent;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #06b6d4, #6366f1);
+      color: white;
+      border: none;
+    }
+    .btn-primary:hover { box-shadow: 0 0 20px rgba(6,182,212,0.4); }
+    .btn-secondary {
+      background: var(--bg-secondary);
+      color: var(--text-secondary);
+      border-color: var(--border-primary);
+    }
+    html.light .btn-secondary { background: var(--bg-card); color: var(--text-secondary); }
+    .btn-secondary:hover { color: var(--text-primary); border-color: var(--border-secondary); }
+    .btn-ghost {
+      color: var(--text-secondary);
+    }
+    .btn-ghost:hover { color: var(--text-primary); background: rgba(255,255,255,0.05); }
+    html.light .btn-ghost:hover { background: var(--bg-card-hover); }
+    .btn-danger {
+      background: rgba(239,68,68,0.1);
+      color: #f87171;
+      border-color: rgba(239,68,68,0.2);
+    }
+    .btn-danger:hover { background: rgba(239,68,68,0.2); }
+
+    /* ── Inputs ─────────────────────────────────────────────────────── */
+    .input {
+      width: 100%;
+      padding: 8px 12px;
+      background: var(--bg-input);
+      border: 1px solid var(--border-primary);
+      border-radius: 8px;
+      font-size: 13px;
+      color: var(--text-primary);
+      transition: all 0.15s;
+      outline: none;
+    }
+    .input:focus { border-color: var(--border-accent); box-shadow: 0 0 0 3px rgba(6,182,212,0.1); }
+    .input::placeholder { color: var(--text-muted); }
+
+    /* ── Project Cards Grid ─────────────────────────────────────────── */
+    .projects-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 16px;
+    }
+    .project-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-primary);
+      border-radius: 12px;
+      padding: 20px;
+      cursor: pointer;
+      transition: all 0.2s;
+      position: relative;
+      overflow: hidden;
+    }
+    .project-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, #06b6d4, #6366f1, #a78bfa);
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    .project-card:hover {
+      border-color: var(--border-secondary);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    }
+    html.light .project-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+    .project-card:hover::before { opacity: 1; }
+    .pc-name {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+    }
+    .pc-desc {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .pc-stats {
+      display: flex;
+      gap: 16px;
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+    .pc-stat-value { font-weight: 600; color: var(--text-accent); }
+
+    /* ── Phase / Task Cards ─────────────────────────────────────────── */
+    .phase-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-primary);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 12px;
+      transition: all 0.15s;
+    }
+    .phase-card:hover { border-color: var(--border-secondary); }
+    .phase-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+      cursor: pointer;
+    }
+    .phase-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .phase-badge {
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 12px;
+      background: rgba(6,182,212,0.1);
+      color: var(--text-accent);
+    }
+    .phase-desc {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+    }
+    .task-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 12px;
+      border-radius: 8px;
+      transition: all 0.15s;
+      border: 1px solid transparent;
+    }
+    .task-item:hover { background: rgba(255,255,255,0.03); }
+    html.light .task-item:hover { background: var(--bg-card-hover); }
+    .task-checkbox {
+      width: 18px;
+      height: 18px;
+      border-radius: 4px;
+      border: 2px solid var(--border-secondary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: all 0.15s;
+    }
+    .task-checkbox:hover { border-color: var(--border-accent); }
+    .task-checkbox.checked {
+      background: linear-gradient(135deg, #06b6d4, #6366f1);
+      border-color: transparent;
+    }
+    .task-checkbox.checked svg { display: block; }
+    .task-checkbox svg { display: none; width: 12px; height: 12px; color: white; }
+    .task-text {
+      font-size: 13px;
+      color: var(--text-primary);
+      flex: 1;
+    }
+    .task-text.done {
+      text-decoration: line-through;
+      color: var(--text-muted);
+    }
+    .task-delete {
+      opacity: 0;
+      color: var(--text-muted);
+      padding: 4px;
+      border-radius: 4px;
+      transition: all 0.15s;
+    }
+    .task-item:hover .task-delete { opacity: 1; }
+    .task-delete:hover { color: #f87171; background: rgba(239,68,68,0.1); }
+
+    /* ── Modal ──────────────────────────────────────────────────────── */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+    .modal-overlay.show { display: flex; }
+    .modal {
+      background: var(--bg-card);
+      border: 1px solid var(--border-primary);
+      border-radius: 16px;
+      width: 100%;
+      max-width: 500px;
+      max-height: 85vh;
+      overflow-y: auto;
+      animation: fade-in 0.2s ease-out;
+    }
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border-primary);
+    }
+    .modal-title { font-size: 15px; font-weight: 600; color: var(--text-primary); }
+    .modal-close {
+      color: var(--text-muted);
+      padding: 4px;
+      border-radius: 6px;
+      transition: all 0.15s;
+    }
+    .modal-close:hover { color: var(--text-primary); background: rgba(255,255,255,0.05); }
+    .modal-body { padding: 20px; }
+    .modal-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      padding: 16px 20px;
+      border-top: 1px solid var(--border-primary);
+    }
+
+    /* ── Donut Chart ────────────────────────────────────────────────── */
+    .donut-container { position: relative; width: 120px; height: 120px; }
+    .donut-center {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    .donut-percent {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+    .donut-label {
+      font-size: 10px;
+      color: var(--text-muted);
+    }
+
+    /* ── Settings Page ──────────────────────────────────────────────── */
+    .settings-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 16px;
+    }
+    .settings-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-primary);
+      border-radius: 12px;
+      padding: 20px;
+      transition: all 0.15s;
+    }
+    .settings-card:hover { border-color: var(--border-secondary); }
+    .settings-card-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .settings-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border-primary);
+    }
+    .settings-row:last-child { border-bottom: none; }
+    .settings-label { font-size: 13px; color: var(--text-secondary); }
+
+    /* ── Toggle Switch ──────────────────────────────────────────────── */
+    .toggle {
+      position: relative;
+      width: 40px;
+      height: 22px;
+      background: var(--border-primary);
+      border-radius: 11px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .toggle.active { background: #06b6d4; }
+    .toggle::after {
+      content: '';
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 18px;
+      height: 18px;
+      background: white;
+      border-radius: 50%;
+      transition: transform 0.2s;
+    }
+    .toggle.active::after { transform: translateX(18px); }
+
+    /* ── Toast ──────────────────────────────────────────────────────── */
+    .toast-container {
+      position: fixed;
+      bottom: 80px;
+      right: 16px;
+      z-index: 200;
+    }
+    .toast {
+      background: var(--bg-card);
+      border: 1px solid var(--border-primary);
+      border-radius: 10px;
+      padding: 12px 16px;
+      font-size: 13px;
+      color: var(--text-primary);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+      animation: slide-in-right 0.3s ease-out;
+      margin-bottom: 8px;
+    }
+    .toast.success { border-left: 3px solid #34d399; }
+    .toast.error { border-left: 3px solid #f87171; }
+    .toast.info { border-left: 3px solid #06b6d4; }
+
+    /* ── Mobile Bottom Nav ──────────────────────────────────────────── */
+    .mobile-nav {
+      display: none;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 40;
+      background: rgba(10, 15, 37, 0.95);
+      backdrop-filter: blur(16px);
+      border-top: 1px solid rgba(6,182,212,0.2);
+      padding-bottom: env(safe-area-inset-bottom);
+    }
+    html.light .mobile-nav {
+      background: rgba(248, 250, 252, 0.95);
+      border-top-color: var(--border-primary);
+    }
+    .mobile-nav-items {
+      display: flex;
+      align-items: stretch;
+      justify-content: space-around;
+      height: 64px;
+    }
+    .mobile-nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+      flex: 1;
+      font-size: 10px;
+      font-weight: 500;
+      color: var(--text-muted);
+      transition: all 0.15s;
+      text-decoration: none;
+    }
+    .mobile-nav-item.active { color: #67e8f9; }
+    .mobile-nav-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 28px;
+      border-radius: 12px;
+      transition: all 0.15s;
+    }
+    .mobile-nav-item.active .mobile-nav-icon {
+      background: linear-gradient(135deg, rgba(6,182,212,0.25), rgba(99,102,241,0.25));
+      box-shadow: 0 0 12px rgba(34,211,238,0.25);
+    }
+
+    /* ── Back Button ────────────────────────────────────────────────── */
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      color: var(--text-secondary);
+      padding: 6px 12px;
+      border-radius: 8px;
+      transition: all 0.15s;
+      cursor: pointer;
+    }
+    .back-btn:hover { color: var(--text-primary); background: rgba(255,255,255,0.05); }
+    html.light .back-btn:hover { background: var(--bg-card-hover); }
+
+    /* ── Empty State ────────────────────────────────────────────────── */
+    .empty-state {
+      text-align: center;
+      padding: 48px 24px;
+      color: var(--text-muted);
+    }
+    .empty-state-icon { font-size: 48px; margin-bottom: 16px; opacity: 0.5; }
+    .empty-state-title { font-size: 16px; font-weight: 600; color: var(--text-secondary); margin-bottom: 4px; }
+    .empty-state-desc { font-size: 13px; margin-bottom: 16px; }
+
+    /* ── Responsive ─────────────────────────────────────────────────── */
+    @media (max-width: 1024px) {
+      .sidebar { display: none; }
+      .mobile-nav { display: block; }
+      .menu-toggle { display: flex; }
+      .search-trigger { display: none; }
+      .page { padding: 16px; padding-bottom: 80px; }
+    }
+    @media (max-width: 640px) {
+      .stats-grid { grid-template-columns: 1fr 1fr; }
+      .projects-grid { grid-template-columns: 1fr; }
+      .settings-grid { grid-template-columns: 1fr; }
+    }
+
+    /* ── Utility ────────────────────────────────────────────────────── */
+    .text-accent { color: var(--text-accent); }
+    .text-muted { color: var(--text-muted); }
+    .text-primary { color: var(--text-primary); }
+    .text-secondary { color: var(--text-secondary); }
+    .mt-2 { margin-top: 8px; }
+    .mt-4 { margin-top: 16px; }
+    .mb-2 { margin-bottom: 8px; }
+    .mb-4 { margin-bottom: 16px; }
+    .flex { display: flex; }
+    .items-center { align-items: center; }
+    .justify-between { justify-content: space-between; }
+    .gap-2 { gap: 8px; }
+    .gap-3 { gap: 12px; }
+    .gap-4 { gap: 16px; }
+    .flex-1 { flex: 1; }
+    .flex-shrink-0 { flex-shrink: 0; }
+    .font-semibold { font-weight: 600; }
+    .font-bold { font-weight: 700; }
+    .text-sm { font-size: 13px; }
+    .text-xs { font-size: 12px; }
+    .text-base { font-size: 15px; }
+    .w-full { width: 100%; }
+    .hidden { display: none !important; }
+    .relative { position: relative; }
+    .overflow-y-auto { overflow-y: auto; }
+
+    /* ── Sidebar Toggle (mobile) ────────────────────────────────────── */
+    .sidebar-mobile-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 40;
+    }
+    .sidebar-mobile-overlay.show { display: block; }
+    .sidebar-mobile {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      width: 240px;
+      z-index: 50;
+      background: linear-gradient(180deg, #080d23, #0c1a3a 50%, #0a0f25);
+      border-right: 1px solid rgba(6,182,212,0.15);
+    }
+    html.light .sidebar-mobile {
+      background: linear-gradient(180deg, #f1f5f9, #e2e8f0);
+      border-right: 1px solid var(--border-primary);
+    }
+    .sidebar-mobile.show { display: flex; flex-direction: column; }
+
+    /* ── Subtask Styles ─────────────────────────────────────────────── */
+    .subtask-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 4px 0 4px 28px;
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+    .subtask-item .task-checkbox { width: 14px; height: 14px; }
+    .subtask-item .task-checkbox svg { width: 10px; height: 10px; }
+    .subtask-item .task-text { font-size: 12px; }
+
+    /* ── Task Metadata Badges ──────────────────────────────────────── */
+    .task-meta { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-bottom: 4px; }
+    .badge {
+      display: inline-flex; align-items: center; gap: 3px;
+      padding: 2px 7px; border-radius: 6px; font-size: 11px; font-weight: 500;
+      line-height: 1.4; white-space: nowrap;
+    }
+    .badge-priority-high { background: rgba(239,68,68,0.15); color: #f87171; }
+    .badge-priority-med  { background: rgba(251,146,60,0.15); color: #fb923c; }
+    .badge-priority-low  { background: rgba(52,211,153,0.15); color: #34d399; }
+    .badge-due {
+      background: rgba(99,102,241,0.12); color: #818cf8;
+    }
+    .badge-due.overdue {
+      background: rgba(239,68,68,0.15); color: #f87171;
+      animation: pulse-overdue 2s ease-in-out infinite;
+    }
+    @keyframes pulse-overdue {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.7; }
+    }
+    .badge-subtasks { background: rgba(6,182,212,0.12); color: #22d3ee; }
+    .task-notes-preview {
+      font-size: 11px; color: var(--text-muted); margin-top: 2px;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+      max-width: 400px;
+    }
+    html.light .badge-priority-high { background: rgba(239,68,68,0.1); color: #dc2626; }
+    html.light .badge-priority-med  { background: rgba(251,146,60,0.1); color: #ea580c; }
+    html.light .badge-priority-low  { background: rgba(52,211,153,0.1); color: #059669; }
+    html.light .badge-due           { background: rgba(99,102,241,0.1); color: #4f46e5; }
+    html.light .badge-due.overdue   { background: rgba(239,68,68,0.1); color: #dc2626; }
+    html.light .badge-subtasks      { background: rgba(6,182,212,0.1); color: #0891b2; }
+
+    /* ── Activity Log ──────────────────────────────────────────────── */
+    .activity-list { display: flex; flex-direction: column; }
+    .activity-item {
+      display: flex; align-items: flex-start; gap: 12px;
+      padding: 10px 0; border-bottom: 1px solid var(--border-primary);
+    }
+    .activity-item:last-child { border-bottom: none; }
+    .activity-dot {
+      width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; margin-top: 5px;
+    }
+    .activity-dot.created   { background: #10b981; }
+    .activity-dot.completed { background: #06b6d4; }
+    .activity-dot.edited    { background: #818cf8; }
+    .activity-dot.deleted   { background: #f87171; }
+    .activity-dot.moved     { background: #fbbf24; }
+    .activity-body { flex: 1; min-width: 0; }
+    .activity-text { font-size: 13px; color: var(--text-primary); line-height: 1.4; }
+    .activity-text strong { font-weight: 600; }
+    .activity-time { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+    .activity-project-tag {
+      display: inline-block; padding: 1px 6px; border-radius: 4px; font-size: 10px;
+      background: rgba(6,182,212,0.1); color: #22d3ee; margin-left: 4px;
+    }
+    .activity-empty { text-align: center; padding: 40px 20px; color: var(--text-muted); }
+    .activity-empty svg { margin-bottom: 12px; opacity: 0.4; }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <!-- ═══ Mobile Sidebar Overlay ═══ -->
+    <div class="sidebar-mobile-overlay" id="mobileSidebarOverlay"></div>
+
+    <!-- ═══ Mobile Sidebar ═══ -->
+    <div class="sidebar-mobile" id="mobileSidebar">
+      <div class="sidebar-header">
+        <img src="icons/lpm-logo.png" alt="LPM" class="sidebar-logo">
+        <div class="sidebar-brand">
+          <h1>Local Projects</h1>
+          <p>JRiSpace</p>
+        </div>
+      </div>
+      <nav class="sidebar-nav" id="mobileSidebarNav">
+        <button id="btnViewDashboardMobile" class="nav-item active">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          <span>Dashboard</span>
+        </button>
+        <button id="btnViewProjectsMobile" class="nav-item">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+          <span>All Projects</span>
+        </button>
+        <button id="btnViewChecklistMobile" class="nav-item">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+          <span>Checklist</span>
+        </button>
+        <button id="btnViewTasksMobile" class="nav-item">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+          <span>Tasks</span>
+        </button>
+        <button id="btnViewActivityMobile" class="nav-item">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          <span>Activity</span>
+        </button>
+        <div style="height:1px;background:var(--border-primary);margin:8px 0;"></div>
+        <button id="btnViewWizardMobile" class="nav-item">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          <span>Setup Wizard</span>
+        </button>
+        <button id="btnSettingsPageMobile" class="nav-item">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          <span>Settings</span>
+        </button>
+      </nav>
+    </div>
+
+    <!-- ═══ Desktop Sidebar ═══ -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <img src="icons/lpm-logo.png" alt="LPM" class="sidebar-logo" id="sidebarLogo">
+        <div class="sidebar-brand">
+          <h1 data-brand>Local Projects</h1>
+          <p>JRiSpace</p>
+        </div>
+      </div>
+      <nav class="sidebar-nav" id="sidebarNav">
+        <button id="btnViewDashboard" class="nav-item active">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          <span>Dashboard</span>
+        </button>
+        <button id="btnViewProjects" class="nav-item">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+          <span>All Projects</span>
+        </button>
+        <button id="btnViewChecklist" class="nav-item">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+          <span>Checklist</span>
+        </button>
+        <button id="btnViewTasks" class="nav-item">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+          <span>Tasks</span>
+        </button>
+        <button id="btnViewActivity" class="nav-item">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          <span>Activity</span>
+        </button>
+        <div style="height:1px;background:var(--border-primary);margin:8px 0;"></div>
+        <button id="btnViewWizard" class="nav-item">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          <span>Setup Wizard</span>
+        </button>
+        <button id="btnSettingsPage" class="nav-item">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          <span>Settings</span>
+        </button>
+      </nav>
+      <div class="sidebar-footer">
+        <div class="nav-item" id="btnProfile" title="Profile">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          <span>Profile</span>
+        </div>
+        <div class="nav-item" id="btnCollapse" title="Collapse">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+          <span>Collapse</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ═══ Main Area ═══ -->
+    <div style="display:flex;flex-direction:column;flex:1;min-width:0;">
+      <!-- ═══ Header ═══ -->
+      <header class="top-header">
+        <div class="header-left">
+          <button class="menu-toggle" id="btnMobileMenu" title="Menu">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+          </button>
+          <span class="header-title" id="headerTitle">Dashboard</span>
+        </div>
+        <div class="header-right">
+          <button class="search-trigger" id="btnSearchTrigger">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <span>Search...</span>
+            <kbd>⌘K</kbd>
+          </button>
+          <button class="theme-toggle" id="btnTheme" title="Toggle theme">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" id="themeIcon"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+          </button>
+          <button class="profile-btn" id="btnProfileHeader" title="Profile">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          </button>
+        </div>
+        <!-- Profile Dropdown -->
+        <div class="profile-dropdown" id="profileDropdown">
+          <div class="profile-dropdown-header">
+            <div class="profile-dropdown-avatar">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            </div>
+            <div>
+              <div class="profile-dropdown-name" data-brand>Local Projects Manager</div>
+              <div class="profile-dropdown-role">v1.0 • JRiSpace</div>
+            </div>
+          </div>
+          <div class="profile-dropdown-item" onclick="setView('settings')">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            Settings
+          </div>
+          <div class="profile-dropdown-item" onclick="exportData()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Export Data
+          </div>
+          <div class="profile-dropdown-item" onclick="importData()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            Import Data
+          </div>
+          <div class="profile-dropdown-item" id="btnCloseProfile">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            Close
+          </div>
+        </div>
+      </header>
+
+      <!-- ═══ Main Content ═══ -->
+      <main class="main-content aurora-bg" id="mainContent">
+
+        <!-- ─── Dashboard Page ─── -->
+        <div class="page active" id="dashboard">
+          <div class="stats-grid" id="dashKpis"></div>
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="card-title">Completion Overview</div>
+                <div class="card-subtitle">Across all projects</div>
+              </div>
+              <div class="donut-container">
+                <svg viewBox="0 0 140 140" style="width:120px;height:120px;">
+                  <defs>
+                    <linearGradient id="donutGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stop-color="#06b6d4"/>
+                      <stop offset="50%" stop-color="#6366f1"/>
+                      <stop offset="100%" stop-color="#a78bfa"/>
+                    </linearGradient>
+                  </defs>
+                  <circle cx="70" cy="70" r="56" fill="none" stroke="#334155" stroke-width="12"/>
+                  <circle cx="70" cy="70" r="56" fill="none" stroke="url(#donutGrad)" stroke-width="12" stroke-linecap="round" id="donutFg" stroke-dasharray="0 351.86" transform="rotate(-90 70 70)"/>
+                </svg>
+                <div class="donut-center">
+                  <div class="donut-percent" id="donutTxt">0%</div>
+                </div>
+              </div>
+            </div>
+            <div id="donutLegend" style="padding:0 20px 16px;font-size:12px;color:var(--text-muted);">0 / 0 tasks done across 0 project(s)</div>
+          </div>
+          <div class="card">
+            <div class="card-header"><div class="card-title">Progress by Project</div></div>
+            <div id="projBars" style="padding:0 20px 16px;"></div>
+          </div>
+          <div class="card">
+            <div class="card-header"><div class="card-title">Project Reports</div></div>
+            <div id="dashReports" style="padding:0 20px 16px;"></div>
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="card-title">System Health</div>
+                <div class="card-subtitle" id="healthStamp"></div>
+              </div>
+            </div>
+            <div id="healthBody" style="padding:0 20px 16px;"></div>
+          </div>
+        </div>
+
+        <!-- ─── Projects Page ─── -->
+        <div class="page" id="projectsPage">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+            <h2 style="font-size:18px;font-weight:600;color:var(--text-primary);">Projects</h2>
+            <button class="btn btn-primary" id="btnNewProject">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              New Project
+            </button>
+          </div>
+          <div class="projects-grid" id="projectsGrid"></div>
+        </div>
+
+        <!-- ─── Project Detail Page ─── -->
+        <div class="page" id="projectPage">
+          <div class="back-btn" id="btnBackProjects">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+            All Projects
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin:12px 0 16px;">
+            <div>
+              <h2 style="font-size:18px;font-weight:600;color:var(--text-primary);" id="headProjectDetail"></h2>
+              <p style="font-size:12px;color:var(--text-muted);" id="subProjectDetail"></p>
+            </div>
+            <div class="flex gap-2">
+              <button class="btn btn-secondary" id="btnEditProject" title="Edit project">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              </button>
+              <button class="btn btn-danger" id="btnDeleteProject" title="Delete project">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+              </button>
+            </div>
+          </div>
+          <div class="card mb-4">
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 20px;">
+              <div style="font-size:13px;color:var(--text-secondary);" id="globalCountsDetail">0 / 0 tasks</div>
+              <div style="font-size:13px;font-weight:600;color:var(--text-accent);" id="globalPctDetail">0%</div>
+            </div>
+            <div style="height:4px;background:var(--bg-tertiary);margin:0 20px 12px;border-radius:2px;overflow:hidden;">
+              <div id="globalTrackDetail" style="height:100%;width:0%;background:linear-gradient(90deg,#06b6d4,#6366f1);border-radius:2px;transition:width .3s;"></div>
+            </div>
+          </div>
+          <div class="card mb-4">
+            <div style="padding:12px 20px;">
+              <input class="input" id="taskSearchDetail" placeholder="Search tasks..." style="width:100%;">
+            </div>
+          </div>
+          <div id="phasesDetail"></div>
+        </div>
+
+        <!-- ─── Checklist Page ─── -->
+        <div class="page" id="checklistPage">
+          <div class="card mb-4">
+            <div class="card-header">
+              <div>
+                <div class="card-title">Active Project</div>
+                <div class="card-subtitle">Select a project from the sidebar</div>
+              </div>
+            </div>
+            <div style="padding:0 20px 12px;">
+              <select class="input" id="selProject" style="max-width:320px;width:100%;"></select>
+            </div>
+          </div>
+          <div class="card mb-4">
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 20px;">
+              <div style="font-size:13px;color:var(--text-secondary);" id="globalCounts">0 / 0 tasks</div>
+              <div style="font-size:13px;font-weight:600;color:var(--text-accent);" id="globalPct">0%</div>
+            </div>
+            <div style="height:4px;background:var(--bg-tertiary);margin:0 20px 12px;border-radius:2px;overflow:hidden;">
+              <div id="globalTrack" style="height:100%;width:0%;background:linear-gradient(90deg,#06b6d4,#6366f1);border-radius:2px;transition:width .3s;"></div>
+            </div>
+          </div>
+          <div class="card mb-4">
+            <div style="padding:12px 20px;">
+              <input class="input" id="taskSearch" placeholder="Search tasks..." style="width:100%;">
+            </div>
+          </div>
+          <div id="phases"></div>
+        </div>
+
+        <!-- ─── Tasks Page ─── -->
+        <div class="page" id="tasksPage">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+            <h2 style="font-size:18px;font-weight:600;color:var(--text-primary);">All Tasks</h2>
+            <div style="display:flex;gap:8px;">
+              <select class="input" id="taskFilterProject" style="width:auto;padding:4px 8px;font-size:12px;">
+                <option value="">All Projects</option>
+              </select>
+              <select class="input" id="taskFilterStatus" style="width:auto;padding:4px 8px;font-size:12px;">
+                <option value="">All Status</option>
+                <option value="pending">Pending</option>
+                <option value="done">Done</option>
+              </select>
+            </div>
+          </div>
+          <div class="card mb-4">
+            <div style="padding:12px 20px;">
+              <input class="input" id="taskSearchGlobal" placeholder="Search tasks across all projects..." style="width:100%;">
+            </div>
+          </div>
+          <div class="card mb-4">
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 20px;">
+              <div style="font-size:13px;color:var(--text-secondary);" id="taskGlobalCounts">0 / 0 tasks</div>
+              <div style="font-size:13px;font-weight:600;color:var(--text-accent);" id="taskGlobalPct">0%</div>
+            </div>
+            <div style="height:4px;background:var(--bg-tertiary);margin:0 20px 12px;border-radius:2px;overflow:hidden;">
+              <div id="taskGlobalTrack" style="height:100%;width:0%;background:linear-gradient(90deg,#06b6d4,#6366f1);border-radius:2px;transition:width .3s;"></div>
+            </div>
+          </div>
+          <div id="taskGlobalList"></div>
+        </div>
+
+        <!-- ─── Activity Log Page ─── -->
+        <div class="page" id="activityPage">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+            <h2 style="font-size:18px;font-weight:600;color:var(--text-primary);">Activity Log</h2>
+            <button class="btn btn-secondary" id="btnClearActivity" style="font-size:12px;padding:5px 10px;">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+              Clear
+            </button>
+          </div>
+          <div class="card mb-4">
+            <div style="padding:12px 20px;">
+              <input class="input" id="activitySearch" placeholder="Search activity..." style="width:100%;">
+            </div>
+          </div>
+          <div class="card">
+            <div id="activityList" class="activity-list" style="padding:8px 20px;"></div>
+          </div>
+        </div>
+
+        <!-- ─── Settings Page ─── -->
+        <div class="page" id="settingsPage">
+          <h2 style="font-size:18px;font-weight:600;color:var(--text-primary);margin-bottom:16px;">Settings</h2>
+          <div class="settings-grid">
+            <!-- General -->
+            <div class="settings-card">
+              <div class="settings-card-title">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                General
+              </div>
+              <div class="settings-row">
+                <span class="settings-label">Dark Mode</span>
+                <div class="toggle" id="toggleTheme" onclick="toggleTheme()"></div>
+              </div>
+              <div class="settings-row">
+                <span class="settings-label">Language</span>
+                <select class="input" id="selLanguage" style="width:auto;padding:4px 8px;font-size:12px;">
+                  <option value="en">English</option>
+                  <option value="ht">Kreyòl Ayisyen</option>
+                  <option value="fr">Français</option>
+                </select>
+              </div>
+            </div>
+            <!-- Projects -->
+            <div class="settings-card">
+              <div class="settings-card-title">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+                Projects
+              </div>
+              <div class="settings-row">
+                <span class="settings-label">Scan for new projects</span>
+                <button class="btn btn-secondary" onclick="scanProjects()">Scan</button>
+              </div>
+              <div class="settings-row">
+                <span class="settings-label">Create new project</span>
+                <button class="btn btn-secondary" onclick="showNewProjectModal()">New</button>
+              </div>
+            </div>
+            <!-- Database -->
+            <div class="settings-card">
+              <div class="settings-card-title">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+                Database
+              </div>
+              <div class="settings-row">
+                <span class="settings-label">Connect to database</span>
+                <button class="btn btn-secondary" onclick="showToast('Database connection coming soon','info')">Connect</button>
+              </div>
+              <div class="settings-row">
+                <span class="settings-label">Backup data</span>
+                <button class="btn btn-secondary" onclick="exportData()">Backup</button>
+              </div>
+              <div class="settings-row">
+                <span class="settings-label">Restore from backup</span>
+                <button class="btn btn-secondary" onclick="importData()">Restore</button>
+              </div>
+            </div>
+            <!-- Data Management -->
+            <div class="settings-card">
+              <div class="settings-card-title">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                Data Management
+              </div>
+              <div class="settings-row">
+                <span class="settings-label">Export all data (JSON)</span>
+                <button class="btn btn-secondary" onclick="exportData()">Export</button>
+              </div>
+              <div class="settings-row">
+                <span class="settings-label">Import from file</span>
+                <button class="btn btn-secondary" onclick="importData()">Import</button>
+              </div>
+              <div class="settings-row">
+                <span class="settings-label">Clear all data</span>
+                <button class="btn btn-danger" onclick="clearAllData()">Clear</button>
+              </div>
+            </div>
+            <!-- About -->
+            <div class="settings-card">
+              <div class="settings-card-title">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                About
+              </div>
+              <div class="settings-row">
+                <span class="settings-label">Version</span>
+                <span style="font-size:12px;color:var(--text-muted);">1.0.0</span>
+              </div>
+              <div class="settings-row">
+                <span class="settings-label">Author</span>
+                <span style="font-size:12px;color:var(--text-muted);">Sylvenson Richard</span>
+              </div>
+              <div class="settings-row">
+                <span class="settings-label">Company</span>
+                <span style="font-size:12px;color:var(--text-muted);">JRiSpace</span>
+              </div>
+              <div class="settings-row">
+                <span class="settings-label">Website</span>
+                <a href="https://jrispace.com" target="_blank" style="font-size:12px;color:var(--text-accent);text-decoration:none;">jrispace.com</a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- ═══ Mobile Bottom Nav ═══ -->
+  <nav class="mobile-nav" id="mobileNav">
+    <div class="mobile-nav-items">
+      <a class="mobile-nav-item" data-view="dashboard" onclick="setView('dashboard')">
+        <span class="mobile-nav-icon">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        </span>
+        Home
+      </a>
+      <a class="mobile-nav-item" data-view="projects" onclick="setView('projects')">
+        <span class="mobile-nav-icon">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+        </span>
+        Projects
+      </a>
+      <a class="mobile-nav-item" data-view="checklist" onclick="setView('checklist')">
+        <span class="mobile-nav-icon">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+        </span>
+        Tasks
+      </a>
+      <a class="mobile-nav-item" data-view="settings" onclick="setView('settings')">
+        <span class="mobile-nav-icon">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        </span>
+        Settings
+      </a>
+      <a class="mobile-nav-item" onclick="document.getElementById('mobileSidebar').classList.add('show');document.getElementById('mobileSidebarOverlay').classList.add('show');">
+        <span class="mobile-nav-icon">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        </span>
+        Menu
+      </a>
+    </div>
+  </nav>
+
+  <!-- ═══ Modals ═══ -->
+  <!-- New Project Modal -->
+  <div class="modal-overlay" id="newProjectModal">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title">New Project</div>
+        <button class="modal-close" onclick="closeModal('newProjectModal')">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <label style="font-size:13px;color:var(--text-secondary);display:block;margin-bottom:6px;">Project Name</label>
+        <input class="input" id="newProjectName" placeholder="e.g. Glory Platform">
+        <label style="font-size:13px;color:var(--text-secondary);display:block;margin-top:12px;margin-bottom:6px;">Description (optional)</label>
+        <input class="input" id="newProjectDesc" placeholder="Brief description of the project">
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('newProjectModal')">Cancel</button>
+        <button class="btn btn-primary" id="btnCreateProject">Create</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Task Edit Modal -->
+  <div class="modal-overlay" id="taskEditModal">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title">Edit Task</div>
+        <button class="modal-close" onclick="closeModal('taskEditModal')">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <label style="font-size:13px;color:var(--text-secondary);display:block;margin-bottom:6px;">Task Text</label>
+        <input class="input" id="taskEditText">
+        <div style="margin-top:12px;">
+          <label style="font-size:13px;color:var(--text-secondary);display:block;margin-bottom:6px;">Subtasks</label>
+          <div id="subtaskList"></div>
+          <div style="display:flex;gap:8px;margin-top:8px;">
+            <input class="input" id="newSubtaskInput" placeholder="Add a subtask..." style="flex:1;">
+            <button class="btn btn-secondary" id="btnAddSubtask">Add</button>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('taskEditModal')">Cancel</button>
+        <button class="btn btn-primary" id="btnSaveTask">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+
+  <!-- ═══ Hidden Elements (JS dependencies) ═══ -->
+  <div style="display:none;">
+    <!-- Navigation buttons -->
+    <button id="btnAddPhase"></button>
+    <button id="btnBackFromSettings"></button>
+    <button id="btnCopyReport"></button>
+    <button id="btnDbBackup"></button>
+    <button id="btnDbConnect"></button>
+    <button id="btnDbRestore"></button>
+    <button id="btnDupProject"></button>
+    <button id="btnExport"></button>
+    <button id="btnImport"></button>
+    <button id="btnLang"></button>
+    <button id="btnMenu"></button>
+    <button id="btnNewProjectPage"></button>
+    <button id="btnProfileClose"></button>
+    <button id="btnRenameProject"></button>
+    <button id="btnReset"></button>
+    <button id="btnScanFolder"></button>
+    <button id="btnSettingBackup"></button>
+    <button id="btnSettingClear"></button>
+    <button id="btnSettingDbConnect"></button>
+    <button id="btnSettingExport"></button>
+    <button id="btnSettingImport"></button>
+    <button id="btnSettingLang"></button>
+    <button id="btnSettingNew"></button>
+    <button id="btnSettingRestore"></button>
+    <button id="btnSettingScan"></button>
+    <button id="btnSettingTheme"></button>
+    <button id="btnSettings"></button>
+    <button id="btnSetupWizard"></button>
+    <button id="btnSyncProfile"></button>
+    <button id="btnThemeToggle"></button>
+    
+    <!-- DB Badge -->
+    <div id="dbBadge"></div>
+    
+    <!-- Drawer -->
+    <div id="drawerOverlay"></div>
+    <div id="launchWizard"></div>
+    
+    <!-- File inputs -->
+    <input type="file" id="fileInput">
+    <input type="file" id="folderInput" webkitdirectory>
+    
+    <!-- Modal elements -->
+    <div id="mCancel"></div>
+    <div id="mClose"></div>
+    <input id="mDue">
+    <input id="mName">
+    <textarea id="mNotes"></textarea>
+    <div id="mOpenProject"></div>
+    <input id="mPDesc">
+    <input id="mPName">
+    <select id="mPhase"></select>
+    <select id="mPriority"></select>
+    <div id="mSave"></div>
+    <input id="mText">
+    <button id="modalAddSubBtn"></button>
+    <div id="modalBox"></div>
+    <input id="modalNewSub">
+    <div id="modalSubSection"></div>
+    <div id="overlay"></div>
+    
+    <!-- Project bars -->
+    <div id="projBars"></div>
+    
+    <!-- Sheet -->
+    <div id="sheetOverlay"></div>
+    <div id="sideSheet"></div>
+    <button id="ssAddSub"></button>
+    <button id="ssClose"></button>
+    <button id="ssDel"></button>
+    <button id="ssEdit"></button>
+    <input id="ssNewSub">
+    <div id="ssStatus"></div>
+    
+    <!-- Tabs -->
+    <div id="tabBar"></div>
+    <button id="tabChecklist"></button>
+    <button id="tabDashboard"></button>
+    <button id="tabDb"></button>
+    <button id="tabMenu"></button>
+    <button id="tabNew"></button>
+    <button id="tabProjects"></button>
+    
+    <!-- Toast -->
+    <div id="toast"></div>
+    
+    <!-- Wizard -->
+    <button id="wizBack"></button>
+    <button id="wizBack3"></button>
+    <button id="wizBrandPrev"></button>
+    <button id="wizClose"></button>
+    <input id="wizCompany">
+    <button id="wizContinue"></button>
+    <div id="wizDoneMsg"></div>
+    <button id="wizFinish"></button>
+    <button id="wizNext1"></button>
+    <div id="wizRootInfo"></div>
+    <button id="wizRootPrev"></button>
+    <button id="wizScan"></button>
+    <button id="wizSkip"></button>
+    
+    <!-- Side projects -->
+    <div id="sideProjects"></div>
+    <div id="sideBadge"></div>
+  </div>
+
+  <!-- ═══ All JavaScript (preserved) ═══ -->
+  <script src="app.js"></script>
+</body>
+</html>

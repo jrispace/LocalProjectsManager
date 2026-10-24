@@ -1,14 +1,13 @@
 /* LocalProjectsManager — Service Worker (PWA)
-   JRiSpace | Sylvenson Richard
+   Local Projects Manager | Sylvenson Richard
    Strategy: network-first for navigations (fresh app), cache-first for assets.
    App is 100% local anyway — this just makes it installable + resilient. */
 
-const CACHE = "lpm-v1";
+const CACHE = "lpm-v2";
 const ASSETS = [
   "./",
-  "./app",
-  "./index.html",
   "./app.html",
+  "./app.js",
   "./manifest.webmanifest",
   "./icons/icon-192.png",
   "./icons/icon-512.png",
