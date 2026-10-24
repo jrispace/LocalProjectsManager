@@ -113,7 +113,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   const selectProject = useCallback((key: string | null) => {
     setSelectedProject(key);
-    setView("project");
+    // A null key means "show the project list", not "open a project".
+    setView(key ? "project" : "projects");
     setDrawerOpen(false);
   }, []);
 

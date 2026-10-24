@@ -38,6 +38,11 @@ const translations: Record<string, Record<string, string>> = {
     "projects.none": "No project selected",
     "projects.goTo": "Go to Projects",
     "projects.notFound": "Project not found",
+    "projects.notFoundDesc": "This project has no saved data in this browser.",
+    "projects.removeBroken": "Remove from list",
+    "projects.searchPlaceholder": "Search projects…",
+    "projects.noResults": "No project matches your search",
+    "projects.clearSearch": "Clear search",
     "projects.back": "← Back",
 
     // Checklist
@@ -232,6 +237,11 @@ const translations: Record<string, Record<string, string>> = {
     "projects.none": "Pa gen pwojè chwazi",
     "projects.goTo": "Ale nan Pwojè",
     "projects.notFound": "Pwojè pa jwenn",
+    "projects.notFoundDesc": "Pwojè sa a pa gen done ki anrejistre nan navigatè sa a.",
+    "projects.removeBroken": "Retire nan lis la",
+    "projects.searchPlaceholder": "Chèche pwojè…",
+    "projects.noResults": "Pa gen pwojè ki matche rechèch la",
+    "projects.clearSearch": "Efase rechèch",
     "projects.back": "← Retounen",
 
     // Checklist
@@ -426,6 +436,11 @@ const translations: Record<string, Record<string, string>> = {
     "projects.none": "Aucun projet sélectionné",
     "projects.goTo": "Aller aux projets",
     "projects.notFound": "Projet introuvable",
+    "projects.notFoundDesc": "Ce projet n'a aucune donnée enregistrée dans ce navigateur.",
+    "projects.removeBroken": "Retirer de la liste",
+    "projects.searchPlaceholder": "Rechercher un projet…",
+    "projects.noResults": "Aucun projet ne correspond à votre recherche",
+    "projects.clearSearch": "Effacer la recherche",
     "projects.back": "← Retour",
 
     // Checklist

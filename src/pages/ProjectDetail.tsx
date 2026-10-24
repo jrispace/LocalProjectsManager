@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useApp } from "../context/AppContext";
 import { updateProject, addPhase, deleteProject as deleteProjectFn } from "../lib/project";
 import { calcStats } from "../lib/utils";
-import { addActivity } from "../lib/storage";
+import { addActivity, getRegistry } from "../lib/storage";
 import { t } from "../lib/i18n";
 import PhaseCard from "../components/PhaseCard";
 import DonutChart from "../components/DonutChart";
@@ -31,12 +31,31 @@ export default function ProjectDetail() {
 
   const data = getProject(selectedProject);
   if (!data) {
+    const entry = getRegistry().projects.find((p) => p.key === selectedProject);
     return (
       <div className="page active animate-fade-in">
         <div className="empty-state">
           <div className="empty-state-icon">❓</div>
-          <div className="empty-state-title">{t("projects.notFound")}</div>
-          <button className="btn btn-primary mt-4" onClick={() => setView("projects")}>{t("projects.goTo")}</button>
+          <div className="empty-state-title">
+            {entry?.name || t("projects.notFound")}
+          </div>
+          <div className="empty-state-desc">{t("projects.notFoundDesc")}</div>
+          <div style={{ display: "flex", gap: 8, justifyContent: "center", marginTop: 16, flexWrap: "wrap" }}>
+            <button className="btn btn-primary" onClick={() => setView("projects")}>{t("projects.goTo")}</button>
+            {entry && (
+              <button
+                className="btn btn-secondary"
+                onClick={() => {
+                  deleteProjectFn(selectedProject);
+                  refresh();
+                  setView("projects");
+                  showToast(t("projects.removeBroken"), "info");
+                }}
+              >
+                {t("projects.removeBroken")}
+              </button>
+            )}
+          </div>
         </div>
       </div>
     );

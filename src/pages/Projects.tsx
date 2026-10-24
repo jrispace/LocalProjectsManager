@@ -17,10 +17,20 @@ export default function Projects() {
   const [editOpen, setEditOpen] = useState<{ key: string; name: string; desc: string } | null>(null);
   const [editName, setEditName] = useState("");
   const [editDesc, setEditDesc] = useState("");
+  const [query, setQuery] = useState("");
 
   const projects = useMemo(() => {
     return getRegistry().projects || [];
   }, [refreshKey]);
+
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return projects;
+    return projects.filter((p: any) => {
+      const hay = `${p.name || ""} ${p.desc || ""}`.toLowerCase();
+      return hay.includes(q);
+    });
+  }, [projects, query]);
 
   const handleCreate = () => {
     if (!newName.trim()) return;
@@ -95,7 +105,9 @@ export default function Projects() {
       <div className="flex items-center justify-between mb-4">
         <div>
           <h2 style={{ fontSize: 20, fontWeight: 700, color: "var(--text-primary)" }}>{t("projects.title")}</h2>
-          <p className="text-sm text-muted">{projects.length} {t("common.items")}</p>
+          <p className="text-sm text-muted">
+            {query.trim() ? `${filtered.length} / ${projects.length}` : projects.length} {t("common.items")}
+          </p>
         </div>
         <button className="btn btn-primary" onClick={() => setCreateOpen(true)}>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -105,6 +117,32 @@ export default function Projects() {
         </button>
       </div>
 
+      {projects.length > 0 && (
+        <div className="projects-search">
+          <svg className="projects-search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+          <input
+            className="input projects-search-input"
+            type="search"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            onKeyDown={(e) => { if (e.key === "Escape") setQuery(""); }}
+            placeholder={t("projects.searchPlaceholder")}
+            aria-label={t("projects.searchPlaceholder")}
+            autoComplete="off"
+            spellCheck={false}
+          />
+          {query && (
+            <button className="projects-search-clear" onClick={() => setQuery("")} aria-label={t("projects.clearSearch")} title={t("projects.clearSearch")}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
+            </button>
+          )}
+        </div>
+      )}
+
       {projects.length === 0 ? (
         <div className="empty-state">
           <div className="empty-state-icon">📁</div>
@@ -112,9 +150,16 @@ export default function Projects() {
           <div className="empty-state-desc">{t("projects.createFirst")}</div>
           <button className="btn btn-primary" onClick={() => setCreateOpen(true)}>{t("projects.new")}</button>
         </div>
+      ) : filtered.length === 0 ? (
+        <div className="empty-state">
+          <div className="empty-state-icon">🔍</div>
+          <div className="empty-state-title">{t("projects.noResults")}</div>
+          <div className="empty-state-desc">“{query.trim()}”</div>
+          <button className="btn btn-secondary" onClick={() => setQuery("")}>{t("projects.clearSearch")}</button>
+        </div>
       ) : (
         <div className="projects-grid">
-          {projects.map((p: any) => {
+          {filtered.map((p: any) => {
             const data = getProjectData(p.key);
             const s = data?.phases ? calcStats(data.phases) : { total: 0, done: 0, pct: 0, overdue: 0 };
             return (
