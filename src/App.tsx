@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { AppProvider, useApp } from "./context/AppContext";
 import Sidebar from "./components/Sidebar";
 import Header from "./components/Header";
@@ -18,15 +18,14 @@ import ActivityLog from "./pages/ActivityLog";
 import Settings from "./pages/Settings";
 
 function AppContent() {
-  const { view, theme, drawerOpen, confirmOpen, confirmMsg, confirmFn, closeConfirm } = useApp();
-  const [showLanding, setShowLanding] = useState(true);
+  const { view, theme, landing, openApp, drawerOpen, confirmOpen, confirmMsg, confirmFn, closeConfirm } = useApp();
 
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", theme);
   }, [theme]);
 
-  if (showLanding) {
-    return <LandingPage onOpenApp={() => setShowLanding(false)} />;
+  if (landing) {
+    return <LandingPage onOpenApp={openApp} />;
   }
 
   const renderPage = () => {

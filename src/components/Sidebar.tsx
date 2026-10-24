@@ -35,7 +35,7 @@ interface SidebarProps {
 }
 
 export default function Sidebar({ collapsed, onToggle, className = "sidebar" }: SidebarProps) {
-  const { view, setView, selectProject, openWizard, config, theme, setTheme, lang, setLang } = useApp();
+  const { view, setView, selectProject, openWizard, config, theme, setTheme, lang, setLang, goToLanding } = useApp();
 
   const handleNav = (v: string) => {
     if (v === "projects") {
@@ -59,7 +59,7 @@ export default function Sidebar({ collapsed, onToggle, className = "sidebar" }: 
 
   return (
     <aside className={`${className} ${collapsed ? "collapsed" : ""}`}>
-      <div className="sidebar-header">
+      <div className="sidebar-header" onClick={goToLanding} title="Back to homepage" style={{ cursor: "pointer" }}>
         <img src={`${import.meta.env.BASE_URL}icons/lpm-logo.png`} alt="LPM" className="sidebar-logo" />
         <div className="sidebar-brand">
           <h1>{config.company || "Project Manager"}</h1>

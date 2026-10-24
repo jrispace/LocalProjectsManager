@@ -15,6 +15,7 @@ import {
   setDealStage,
 } from "../lib/crm";
 import { getRegistry } from "../lib/storage";
+import { currentRoute, pushPath, routePath } from "../lib/router";
 import type { Company, Contact, CrmState, Deal, DealStage } from "../lib/types";
 import DealModal from "../components/crm/DealModal";
 import ContactModal from "../components/crm/ContactModal";
@@ -53,9 +54,21 @@ function relTime(iso: string): string {
 
 export default function Crm() {
   const { refresh, refreshKey, showToast, askConfirm } = useApp();
-  const [tab, setTab] = useState<Tab>("pipeline");
+  const [tab, setTabState] = useState<Tab>(() => currentRoute().crmTab || "pipeline");
   const [state, setState] = useState<CrmState>(() => getCrm());
   const [query, setQuery] = useState("");
+
+  const setTab = (next: Tab) => {
+    setTabState(next);
+    setQuery("");
+    pushPath(routePath("crm", null, next));
+  };
+
+  useEffect(() => {
+    const onPop = () => setTabState(currentRoute().crmTab || "pipeline");
+    window.addEventListener("popstate", onPop);
+    return () => window.removeEventListener("popstate", onPop);
+  }, []);
 
   const [dealModal, setDealModal] = useState<{ open: boolean; deal: Deal | null; stage?: DealStage }>({ open: false, deal: null });
   const [contactModal, setContactModal] = useState<{ open: boolean; contact: Contact | null }>({ open: false, contact: null });

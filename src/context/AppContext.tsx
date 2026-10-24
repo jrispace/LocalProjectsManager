@@ -6,6 +6,7 @@ import { setTheme as setThemeFn, getTheme, initTheme, type Theme } from "../lib/
 import { initTabSync, notifyOtherTabs, cleanupTabSync } from "../lib/tabsync";
 import { initKeyboardShortcuts } from "../lib/shortcuts";
 import { connectDisk } from "../lib/diskdb";
+import { currentRoute, pushPath, routePath, LANDING_PATH, APP_ROOT } from "../lib/router";
 
 interface UndoAction {
   label: string;
@@ -13,6 +14,11 @@ interface UndoAction {
 }
 
 interface AppCtx {
+  // ── Routing ─────────────────────────────────────
+  landing: boolean;
+  openApp: () => void;
+  goToLanding: () => void;
+
   // ── View state ──────────────────────────────────
   view: ViewName;
   setView: (v: ViewName) => void;
@@ -74,8 +80,10 @@ const AppContext = createContext<AppCtx | null>(null);
 let toastId = 0;
 
 export function AppProvider({ children }: { children: React.ReactNode }) {
-  const [view, setView] = useState<ViewName>("dashboard");
-  const [selectedProject, setSelectedProject] = useState<string | null>(null);
+  const initialRoute = useRef(currentRoute()).current;
+  const [landing, setLanding] = useState(initialRoute.landing);
+  const [view, setView] = useState<ViewName>(initialRoute.view);
+  const [selectedProject, setSelectedProject] = useState<string | null>(initialRoute.projectKey ?? null);
   const [config, setConfig] = useState<Config>(() => getConfig());
   const [theme, setThemeState] = useState<Theme>(() => getTheme());
   const [lang, setLangState] = useState<Lang>(() => getLang());
@@ -86,8 +94,36 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [confirmMsg, setConfirmMsg] = useState("");
   const [confirmFn, setConfirmFn] = useState<(() => void) | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
-  const [wizardOpen, setWizardOpen] = useState(false);
+  const [wizardOpen, setWizardOpen] = useState(!!initialRoute.setup);
   const undoStackRef = useRef<UndoAction[]>([]);
+
+  // ── URL ⇄ state sync ─────────────────────────────
+  // Every page owns a real path (/app, /app/projects/<key>, /app/crm/contacts…)
+  // so it can be bookmarked, reloaded and shared, and the browser back button
+  // walks through the app instead of leaving it.
+  useEffect(() => {
+    const onPop = () => {
+      const route = currentRoute();
+      setLanding(route.landing);
+      setView(route.view);
+      setSelectedProject(route.projectKey ?? null);
+      setWizardOpen(!!route.setup);
+      setDrawerOpen(false);
+    };
+    window.addEventListener("popstate", onPop);
+    return () => window.removeEventListener("popstate", onPop);
+  }, []);
+
+  useEffect(() => {
+    // The CRM owns its tab segment (/app/crm/contacts…), so don't rewrite it.
+    if (view === "crm" && window.location.pathname.startsWith(`${APP_ROOT}/crm`)) return;
+    const path = landing
+      ? LANDING_PATH
+      : wizardOpen
+        ? routePath("wizard")
+        : routePath(view, selectedProject);
+    pushPath(path);
+  }, [landing, view, selectedProject, wizardOpen]);
 
   // ── Init theme on mount ──────────────────────────
   useEffect(() => {
@@ -133,6 +169,17 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     // A null key means "show the project list", not "open a project".
     setView(key ? "project" : "projects");
     setDrawerOpen(false);
+  }, []);
+
+  const openApp = useCallback(() => {
+    setLanding(false);
+    setView("dashboard");
+    setSelectedProject(null);
+  }, []);
+
+  const goToLanding = useCallback(() => {
+    setLanding(true);
+    setWizardOpen(false);
   }, []);
 
   const updateConfig = useCallback((partial: Partial<Config>) => {
@@ -206,6 +253,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   return (
     <AppContext.Provider
       value={{
+        landing,
+        openApp,
+        goToLanding,
         view,
         setView,
         selectedProject,

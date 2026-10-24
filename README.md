@@ -16,6 +16,20 @@ A 100% local project manager by **Sylvenson Richard** / **JRiSpace** — track e
 
 No install, no dependencies, no account. (The app itself is a web build: it needs a local server, which the launcher provides — that is also what makes the service worker and offline mode work.)
 
+**URLs** — every page has a real path you can bookmark or reload:
+
+```
+/                       landing page
+/app                    dashboard
+/app/projects           project list
+/app/projects/<key>     project detail (phases, tasks, subtasks)
+/app/mytasks            my tasks
+/app/crm                CRM pipeline
+/app/crm/contacts       CRM contacts (also /companies, /activity)
+/app/checklist  /app/tasks  /app/activity  /app/settings
+/app/setup              setup wizard
+```
+
 **Develop it**
 
 ```bash

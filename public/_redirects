@@ -1,0 +1,4 @@
+# Cloudflare Pages (and Netlify) SPA fallback.
+# The app lives at /app with real routes (/app/projects/<key>, /app/crm/contacts…).
+# Existing files are always served first, so /app/assets/* keeps working.
+/app/*  /app/index.html  200
