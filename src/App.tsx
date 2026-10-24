@@ -12,6 +12,8 @@ import Projects from "./pages/Projects";
 import ProjectDetail from "./pages/ProjectDetail";
 import Checklist from "./pages/Checklist";
 import Tasks from "./pages/Tasks";
+import MyTasks from "./pages/MyTasks";
+import Crm from "./pages/Crm";
 import ActivityLog from "./pages/ActivityLog";
 import Settings from "./pages/Settings";
 
@@ -34,6 +36,8 @@ function AppContent() {
       case "project": return <ProjectDetail />;
       case "checklist": return <Checklist />;
       case "tasks": return <Tasks />;
+      case "mytasks": return <MyTasks />;
+      case "crm": return <Crm />;
       case "activity": return <ActivityLog />;
       case "settings": return <Settings />;
       default: return <Dashboard />;

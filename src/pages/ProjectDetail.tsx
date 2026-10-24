@@ -5,6 +5,7 @@ import { calcStats } from "../lib/utils";
 import { addActivity, getRegistry } from "../lib/storage";
 import { t } from "../lib/i18n";
 import PhaseCard from "../components/PhaseCard";
+import TaskBoard from "../components/TaskBoard";
 import DonutChart from "../components/DonutChart";
 import Modal from "../components/Modal";
 
@@ -16,6 +17,7 @@ export default function ProjectDetail() {
   const [editOpen, setEditOpen] = useState(false);
   const [editName, setEditName] = useState("");
   const [editDesc, setEditDesc] = useState("");
+  const [viewMode, setViewMode] = useState<"list" | "board">("list");
 
   if (!selectedProject) {
     return (
@@ -159,7 +161,14 @@ export default function ProjectDetail() {
 
       {/* Phases */}
       <div className="flex items-center justify-between mb-4">
-        <h3 style={{ fontSize: 16, fontWeight: 600, color: "var(--text-primary)" }}>{t("phase.title")}</h3>
+        <div className="view-switch">
+          <button className={`segment ${viewMode === "list" ? "on" : ""}`} onClick={() => setViewMode("list")}>
+            {t("view.list")}
+          </button>
+          <button className={`segment ${viewMode === "board" ? "on" : ""}`} onClick={() => setViewMode("board")}>
+            {t("view.board")}
+          </button>
+        </div>
         <div className="flex gap-2">
           <button className="btn btn-primary btn-sm" onClick={() => setAddPhaseOpen(true)}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -176,7 +185,9 @@ export default function ProjectDetail() {
         </div>
       </div>
 
-      {data.phases.length === 0 ? (
+      {viewMode === "board" ? (
+        <TaskBoard projectKey={selectedProject} data={data} refreshKey={refreshKey} />
+      ) : data.phases.length === 0 ? (
         <div className="empty-state">
           <div className="empty-state-icon">📋</div>
           <div className="empty-state-title">{t("phase.noPhases")}</div>

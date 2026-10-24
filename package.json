@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite --port 8080",
     "build": "tsc -b && vite build",
+    "build:app": "tsc -b && vite build --outDir dist-app",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
     "release": "bash scripts/package-release.sh"

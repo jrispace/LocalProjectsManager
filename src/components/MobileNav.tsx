@@ -11,10 +11,9 @@ const icons = {
 
 const NAV_ITEMS = [
   { view: "dashboard", label: "Home", icon: icons.dashboard },
-  { view: "projects", label: "Projects", icon: icons.projects },
-  { view: "checklist", label: "Checklist", icon: icons.checklist },
-  { view: "tasks", label: "Tasks", icon: icons.tasks },
-  { view: "settings", label: "Settings", icon: icons.settings },
+  { view: "mytasks", label: "My Tasks", icon: icons.tasks },
+  { view: "crm", label: "CRM", icon: icons.projects },
+  { view: "projects", label: "Projects", icon: icons.checklist },
 ];
 
 export default function MobileNav() {

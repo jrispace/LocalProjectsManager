@@ -10,6 +10,8 @@ export default function Header() {
     project: "",
     checklist: "Checklist",
     tasks: "All Tasks",
+    mytasks: "My Tasks",
+    crm: "CRM",
     activity: "Activity Log",
     settings: "Settings",
     wizard: "Setup Wizard",

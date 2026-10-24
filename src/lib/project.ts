@@ -165,7 +165,55 @@ export function toggleTask(key: string, phaseIdx: number, taskIdx: number): void
   const t = data.phases[phaseIdx]?.tasks[taskIdx];
   if (!t) return;
   t.done = !t.done;
+  t.status = t.done ? "done" : "todo";
   t.updatedAt = new Date().toISOString();
+  saveProjectData(key, data);
+}
+
+export function setTaskStatus(
+  key: string,
+  phaseIdx: number,
+  taskIdx: number,
+  status: "todo" | "doing" | "done"
+): void {
+  const data = getProjectData(key);
+  if (!data) return;
+  const t = data.phases[phaseIdx]?.tasks[taskIdx];
+  if (!t) return;
+  t.status = status;
+  t.done = status === "done";
+  t.updatedAt = new Date().toISOString();
+  saveProjectData(key, data);
+}
+
+export function addTaskComment(
+  key: string,
+  phaseIdx: number,
+  taskIdx: number,
+  text: string,
+  by?: string
+): void {
+  const data = getProjectData(key);
+  if (!data) return;
+  const t = data.phases[phaseIdx]?.tasks[taskIdx];
+  if (!t) return;
+  if (!t.comments) t.comments = [];
+  t.comments.push({
+    id: `cm_${Date.now().toString(36)}${Math.random().toString(36).slice(2, 5)}`,
+    text: text.trim(),
+    at: new Date().toISOString(),
+    by,
+  });
+  t.updatedAt = new Date().toISOString();
+  saveProjectData(key, data);
+}
+
+export function deleteTaskComment(key: string, phaseIdx: number, taskIdx: number, commentId: string): void {
+  const data = getProjectData(key);
+  if (!data) return;
+  const t = data.phases[phaseIdx]?.tasks[taskIdx];
+  if (!t || !t.comments) return;
+  t.comments = t.comments.filter((c) => c.id !== commentId);
   saveProjectData(key, data);
 }
 

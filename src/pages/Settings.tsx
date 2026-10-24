@@ -4,10 +4,23 @@ import { t } from "../lib/i18n";
 import type { Theme } from "../lib/theme";
 import type { Lang } from "../lib/i18n";
 import { isDiskConnected, getDiskFolder, connectDisk, backupDatabase, restoreDatabase } from "../lib/diskdb";
+import { getCrm, savePerson, deletePerson, initials } from "../lib/crm";
 
 export default function Settings() {
   const { config, updateConfig, theme, setTheme, lang, setLang, showToast, askConfirm } = useApp();
   const [localConfig, setLocalConfig] = useState({ ...config });
+  const [people, setPeople] = useState(() => getCrm().people);
+  const [newPersonName, setNewPersonName] = useState("");
+  const [newPersonEmail, setNewPersonEmail] = useState("");
+
+  const addPerson = () => {
+    if (!newPersonName.trim()) return;
+    savePerson({ name: newPersonName, email: newPersonEmail || undefined });
+    setPeople(getCrm().people);
+    setNewPersonName("");
+    setNewPersonEmail("");
+    showToast(t("common.save"), "success");
+  };
 
   const handleSave = () => {
     updateConfig(localConfig);
@@ -240,6 +253,56 @@ export default function Settings() {
             <button className="btn btn-danger w-full" onClick={handleClear}>
               Clear All Data
             </button>
+          </div>
+        </div>
+
+        {/* Team (CRM people) */}
+        <div className="settings-card">
+          <div className="settings-card-title">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+            </svg>
+            Team
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            {people.length === 0 && (
+              <p className="text-xs text-muted">Add teammates to assign tasks, own deals and use My Tasks.</p>
+            )}
+            {people.map((person) => (
+              <div key={person.id} className="settings-row">
+                <span className="settings-label" style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <span className="avatar avatar-sm">{initials(person.name)}</span>
+                  <span>
+                    {person.name}
+                    {person.email && <span className="text-xs text-muted" style={{ display: "block" }}>{person.email}</span>}
+                  </span>
+                </span>
+                <button
+                  className="btn-icon"
+                  title={t("common.delete")}
+                  onClick={() => { deletePerson(person.id); setPeople(getCrm().people); showToast(t("common.delete"), "info"); }}
+                >
+                  ✕
+                </button>
+              </div>
+            ))}
+            <div className="flex gap-2">
+              <input
+                className="input"
+                placeholder="Name"
+                value={newPersonName}
+                onChange={(e) => setNewPersonName(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter") addPerson(); }}
+              />
+              <input
+                className="input"
+                placeholder="Email (optional)"
+                value={newPersonEmail}
+                onChange={(e) => setNewPersonEmail(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter") addPerson(); }}
+              />
+              <button className="btn btn-primary" onClick={addPerson}>+</button>
+            </div>
           </div>
         </div>
 

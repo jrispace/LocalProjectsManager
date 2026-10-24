@@ -5,3 +5,4 @@ tsconfig.tsbuildinfo
 .wrangler/
 release/
 legacy/_backup/
+dist-app/

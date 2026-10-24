@@ -104,7 +104,7 @@ export default function LandingPage({ onOpenApp }: { onOpenApp: () => void }) {
       {/* Hero */}
       <div className="landing-hero">
         <div className="landing-wrap">
-          <div className="landing-logo"><img src="/icons/lpm-logo.png" alt="LPM" style={{ height: 40, verticalAlign: "middle" }} /> LOCAL PROJECTS MANAGER</div>
+          <div className="landing-logo"><img src={`${import.meta.env.BASE_URL}icons/lpm-logo.png`} alt="LPM" style={{ height: 40, verticalAlign: "middle" }} /> LOCAL PROJECTS MANAGER</div>
           <h1>Your projects. Your machine. <br />Nothing leaves your computer.</h1>
           <p className="tag">A 100% local project manager — track every project, phase and task with a live dashboard, progress reports and a real database file on your disk. Works like a native app on your phone. No account, no server, no tracking.</p>
           <div className="landing-btns">
@@ -131,6 +131,9 @@ export default function LandingPage({ onOpenApp }: { onOpenApp: () => void }) {
 
           <div className="landing-grid">
             <div className="landing-card"><div className="ico">💾</div><h4>Local disk database</h4><p>One tap on <b>Connect DB</b> writes every change to a real file on your machine — survives clearing your browser cache.</p></div>
+            <div className="landing-card"><div className="ico">🗂</div><h4>List ⇄ Board</h4><p>Every project flips between a phase list and an Asana-style Kanban board with drag &amp; drop, assignees, comments and "blocked by" links.</p></div>
+            <div className="landing-card"><div className="ico">💰</div><h4>CRM pipeline</h4><p>Companies, contacts and deals through Lead → Qualified → Proposal → Negotiation → Won, with a weighted forecast and an activity timeline.</p></div>
+            <div className="landing-card"><div className="ico">🎯</div><h4>My Tasks</h4><p>Everything assigned to you across every project, grouped by overdue, today, next 7 days and later.</p></div>
             <div className="landing-card"><div className="ico">📁</div><h4>Projects become folders</h4><p>"+ New" creates a real folder for each project with its <code style={{ background: "#e8f0fe", color: "#0141c2", padding: "2px 5px", borderRadius: 4, fontSize: 12 }}>checklist.json</code> inside — scan the parent folder and everything comes back.</p></div>
             <div className="landing-card"><div className="ico">📱</div><h4>Real mobile app feel</h4><p>Bottom navigation bar, slide-in menu drawer and touch-friendly controls — it behaves like a native app on your phone.</p></div>
             <div className="landing-card"><div className="ico">📊</div><h4>Live Dashboard</h4><p>Overall completion, progress per project, donut charts and KPI cards — updated the second you tick a task.</p></div>

@@ -1,4 +1,6 @@
 // i18n translations for EN, HT, FR
+import { EXTRA } from "./i18n-extra";
+
 const translations: Record<string, Record<string, string>> = {
   en: {
     // Navigation
@@ -611,7 +613,7 @@ export function getLang(): Lang {
 }
 
 export function t(key: string): string {
-  return translations[currentLang]?.[key] || translations.en[key] || key;
+  return translations[currentLang]?.[key] || EXTRA[currentLang]?.[key] || translations.en[key] || EXTRA.en[key] || key;
 }
 
 export function cycleLang(): Lang {

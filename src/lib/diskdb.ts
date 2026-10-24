@@ -1,5 +1,5 @@
 // Local Disk Database using File System Access API + IndexedDB
-import type { ProjectData, Registry } from "./types";
+import type { ProjectData, Registry, CrmState } from "./types";
 
 const DB_NAME = "lpm-disk-db";
 const DB_VERSION = 1;
@@ -8,7 +8,7 @@ const DB_FILE = "jrispace-pm.db";
 
 let dbHandle: FileSystemDirectoryHandle | null = null;
 let fileHandle: FileSystemFileHandle | null = null;
-let dbState: { registry: Registry; projects: Record<string, ProjectData> } | null = null;
+let dbState: { registry: Registry; projects: Record<string, ProjectData>; crm?: CrmState } | null = null;
 let writeTimeout: ReturnType<typeof setTimeout> | null = null;
 
 // ── IndexedDB for persisting directory handle ──────────────
@@ -48,7 +48,7 @@ async function loadDirHandle(): Promise<FileSystemDirectoryHandle | null> {
 }
 
 // ── Connect to disk ───────────────────────────────────────
-export async function connectDisk(): Promise<boolean> {
+export async function connectDisk(opts: { silent?: boolean } = {}): Promise<boolean> {
   if (dbHandle) return true;
 
   // Try auto-reconnect from IndexedDB
@@ -66,6 +66,9 @@ export async function connectDisk(): Promise<boolean> {
       // Permission denied or handle stale
     }
   }
+
+  // Boot-time reconnect must never open a directory picker.
+  if (opts.silent) return false;
 
   // Ask user to pick directory
   try {
@@ -144,6 +147,17 @@ export function saveDiskProjectData(key: string, data: ProjectData): void {
 export function deleteDiskProjectData(key: string): void {
   if (!dbState) return;
   delete dbState.projects[key];
+  scheduleWrite();
+}
+
+// ── CRM blob ──────────────────────────────────────────────
+export function getDiskCrm(): CrmState | null {
+  return dbState?.crm || null;
+}
+
+export function saveDiskCrm(crm: CrmState): void {
+  if (!dbState) dbState = { registry: { folder: "", projects: [] }, projects: {}, crm };
+  dbState.crm = crm;
   scheduleWrite();
 }
 

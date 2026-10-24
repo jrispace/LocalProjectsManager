@@ -34,13 +34,25 @@ npm run release    # -> release/LocalProjectsManager.zip
 
 ## ✨ Features
 
+**Projects (Asana-style)**
 - **📊 Live Dashboard** — overall completion, progress per project, donut charts, KPI cards, system health
-- **📁 Projects & phases** — intake → plan → design → build → verify → deploy → report template, custom phases, duplicate/rename
-- **✅ Tasks** — priorities, due dates, overdue badges, notes, sub-tasks, task side sheet, global task list
+- **🗂 List ⇄ Board** — every project flips between the classic phase list and a Kanban board (To do / In progress / Done) with drag & drop
+- **👤 Assignees, comments, dependencies** — team roster, `@`-free comment threads, "blocked by" links with a lock banner
+- **🎯 My Tasks** — everything assigned to you across projects, grouped overdue / today / next 7 days / later / no date
+- **📁 Phases & tasks** — intake → plan → design → build → verify → deploy → report template, custom phases, duplicate/rename
+- **✅ Tasks** — priorities, due dates, overdue badges, notes, sub-tasks, tags, task side sheet
 - **🧩 Checklist view** — tick tasks per project, undo from the toast
 - **🔄 Scan folder** — pick `~/Projects`, every subfolder becomes a project, `checklist.json` files are imported
 - **⟳ Profile verify** — re-sync a project to its template: missing tasks are added, nothing is ever deleted
-- **💾 Disk database** — `jrispace-pm.db` in a folder you choose, plus backup / restore
+
+**CRM**
+- **🏢 Companies & contacts** — searchable tables, tags, owners, open value per contact/company
+- **💰 Deal pipeline** — Lead → Qualified → Proposal → Negotiation → Won / Lost, drag deals between stages, per-stage totals
+- **📈 Forecast** — open pipeline, weighted forecast (value × probability), won value, win rate
+- **🕓 Activity timeline** — every stage move, new deal and logged call/meeting/note
+
+**Platform**
+- **💾 Disk database** — `jrispace-pm.db` in a folder you choose (projects + CRM), plus backup / restore
 - **📤 Export / Import** — portable JSON backups
 - **🔁 Multi-tab sync** — changes propagate across tabs via BroadcastChannel
 - **📱 Installable PWA** — service worker, offline shell, mobile bottom nav + drawer

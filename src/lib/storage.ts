@@ -1,4 +1,4 @@
-import type { Registry, ProjectData, ActivityEntry, Config, Phase, Task, SubTask } from "./types";
+import type { Registry, ProjectData, ActivityEntry, Config, Phase, Task, SubTask, TaskComment } from "./types";
 import {
   getDiskProjectData,
   getDiskRegistry,
@@ -48,17 +48,36 @@ function normTask(raw: any): Task {
     createdBy: typeof s?.createdBy === "string" ? s.createdBy : undefined,
     createdAt: typeof s?.createdAt === "string" ? s.createdAt : undefined,
   }));
+  const done = !!t.done;
+  const rawStatus = typeof t.status === "string" ? t.status : "";
+  const status: Task["status"] =
+    rawStatus === "doing" || rawStatus === "inProgress" || rawStatus === "in-progress"
+      ? "doing"
+      : done || rawStatus === "done"
+        ? "done"
+        : "todo";
+  const comments: TaskComment[] = (Array.isArray(t.comments) ? t.comments : []).map((c: any) => ({
+    id: String(c?.id ?? `cm_${Math.random().toString(36).slice(2, 9)}`),
+    text: String(c?.text ?? ""),
+    at: typeof c?.at === "string" ? c.at : new Date().toISOString(),
+    by: typeof c?.by === "string" ? c.by : undefined,
+  }));
   return {
+    id: typeof t.id === "string" && t.id ? t.id : `tk_${Math.random().toString(36).slice(2, 10)}`,
     text: String(t.text ?? ""),
-    done: !!t.done,
+    done: status === "done",
     notes: typeof t.notes === "string" ? t.notes : undefined,
     dueDate: typeof t.dueDate === "string" ? t.dueDate : undefined,
     priority: t.priority === "high" || t.priority === "med" || t.priority === "low" ? t.priority : undefined,
+    status,
+    assigneeId: typeof t.assigneeId === "string" ? t.assigneeId : undefined,
+    tags: Array.isArray(t.tags) ? t.tags.map(String) : [],
+    comments,
+    dependsOn: Array.isArray(t.dependsOn) ? t.dependsOn.map(String) : [],
     subtasks,
     createdAt: typeof t.createdAt === "string" ? t.createdAt : undefined,
     createdBy: typeof t.createdBy === "string" ? t.createdBy : undefined,
     scope: typeof t.scope === "string" ? t.scope : undefined,
-    status: typeof t.status === "string" ? t.status : undefined,
     updatedAt: typeof t.updatedAt === "string" ? t.updatedAt : undefined,
     desc: typeof t.desc === "string" ? t.desc : undefined,
   };
@@ -103,6 +122,21 @@ function registryName(key: string): string {
   return hit?.name || "Untitled project";
 }
 
+// Tasks created before ids existed (or by the legacy app) get a generated id on
+// read. That id must become permanent, otherwise dependencies, comments and the
+// board would point at ids that change on every load.
+function projectNeedsHeal(raw: any): boolean {
+  const phases = raw?.phases ?? raw?.data?.phases ?? raw?.checklist?.phases;
+  if (!Array.isArray(phases)) return true;
+  for (const phase of phases) {
+    const tasks = Array.isArray(phase?.tasks) ? phase.tasks : [];
+    for (const task of tasks) {
+      if (!task || typeof task.id !== "string" || !task.id) return true;
+    }
+  }
+  return false;
+}
+
 // ── Registry ──────────────────────────────────────────────
 function getRegistryRaw(): Registry {
   return read<Registry>(KEYS.REGISTRY, { folder: "", projects: [] });
@@ -144,52 +178,104 @@ export function saveRegistry(r: Registry): void {
 export function getProjectData(key: string): ProjectData | null {
   if (!key) return null;
 
-  const candidates = [key, KEYS.CHECKLIST_PREFIX + key];
-  for (const storageKey of candidates) {
+  // Collect EVERY copy of this project (canonical key, legacy checklist key,
+  // any storage key containing the project key, and the disk database), then
+  // keep the richest one. A stale/empty canonical copy used to hide a project
+  // that still had its real phases + tasks under the legacy key.
+  const candidates: { source: string; storageKey: string; data: ProjectData }[] = [];
+
+  const addCandidate = (source: string, storageKey: string, raw: unknown) => {
+    const norm = normalizeProjectData(raw, registryName(key));
+    if (norm) candidates.push({ source, storageKey, data: norm });
+  };
+
+  for (const storageKey of [key, KEYS.CHECKLIST_PREFIX + key]) {
     const raw = localStorage.getItem(storageKey);
     if (!raw) continue;
-    let parsed: unknown;
     try {
-      parsed = JSON.parse(raw);
-    } catch {
-      continue;
-    }
-    const norm = normalizeProjectData(parsed, registryName(key));
-    if (!norm) continue;
-    if (storageKey !== key) write(key, norm); // self-heal
-    return norm;
-  }
-
-  // Last resort: any storage entry that carries this project's payload.
-  for (let i = 0; i < localStorage.length; i++) {
-    const storageKey = localStorage.key(i);
-    if (!storageKey || storageKey === KEYS.REGISTRY) continue;
-    if (!storageKey.includes(key)) continue;
-    try {
-      const norm = normalizeProjectData(JSON.parse(localStorage.getItem(storageKey) || "null"), registryName(key));
-      if (norm) {
-        write(key, norm);
-        return norm;
-      }
+      addCandidate("local", storageKey, JSON.parse(raw));
     } catch {
       // not JSON — ignore
     }
   }
 
-  const disk = isDiskConnected() ? getDiskProjectData(key) : null;
-  if (disk) {
-    const norm = normalizeProjectData(disk, registryName(key));
-    if (norm) {
-      write(key, norm);
-      return norm;
+  for (let i = 0; i < localStorage.length; i++) {
+    const storageKey = localStorage.key(i);
+    if (!storageKey || storageKey === KEYS.REGISTRY) continue;
+    if (!storageKey.includes(key)) continue;
+    if (storageKey === key || storageKey === KEYS.CHECKLIST_PREFIX + key) continue;
+    try {
+      addCandidate("local-scan", storageKey, JSON.parse(localStorage.getItem(storageKey) || "null"));
+    } catch {
+      // not JSON — ignore
     }
   }
 
-  return null;
+  if (isDiskConnected()) {
+    const disk = getDiskProjectData(key);
+    if (disk) addCandidate("disk", key, disk);
+  }
+
+  if (candidates.length === 0) return null;
+
+  const score = (data: ProjectData) => {
+    let tasks = 0;
+    let subtasks = 0;
+    for (const phase of data.phases) {
+      tasks += phase.tasks.length;
+      for (const task of phase.tasks) subtasks += (task.subtasks || []).length;
+    }
+    // Content wins over emptiness; phases count as a weak signal.
+    return tasks * 100 + subtasks * 10 + data.phases.length;
+  };
+
+  candidates.sort((a, b) => {
+    const diff = score(b.data) - score(a.data);
+    if (diff !== 0) return diff;
+    return String(b.data.updatedAt || "").localeCompare(String(a.data.updatedAt || ""));
+  });
+
+  const winner = candidates[0];
+  const canonical = candidates.find((c) => c.storageKey === key);
+
+  // Heal: promote the winner to the canonical key when the canonical copy is
+  // missing, empty, or older, and when the payload still needs ids/shape fixes.
+  const canonicalRaw = (() => {
+    try {
+      const raw = localStorage.getItem(key);
+      return raw ? JSON.parse(raw) : null;
+    } catch {
+      return null;
+    }
+  })();
+  const canonicalIsWinner = canonical && canonical.data === winner.data;
+  const needsPromotion =
+    winner.source !== "local" ||
+    !canonical ||
+    score(winner.data) > score(canonical.data) ||
+    (canonicalRaw !== null && projectNeedsHeal(canonicalRaw));
+
+  if (needsPromotion && !canonicalIsWinner) write(key, winner.data);
+  else if (canonical && canonicalRaw !== null && projectNeedsHeal(canonicalRaw)) write(key, winner.data);
+
+  return winner.data;
 }
 
 export function saveProjectData(key: string, data: ProjectData): void {
   data.updatedAt = new Date().toISOString();
+  // Guarantee every task is addressable: stable id + full shape. Board drags,
+  // comments and dependencies all reference tasks by id.
+  for (const phase of data.phases || []) {
+    if (!Array.isArray(phase.tasks)) phase.tasks = [];
+    for (const task of phase.tasks) {
+      if (!task.id) task.id = `tk_${Math.random().toString(36).slice(2, 10)}`;
+      if (!task.status) task.status = task.done ? "done" : "todo";
+      if (!Array.isArray(task.subtasks)) task.subtasks = [];
+      if (!Array.isArray(task.comments)) task.comments = [];
+      if (!Array.isArray(task.dependsOn)) task.dependsOn = [];
+      if (!Array.isArray(task.tags)) task.tags = [];
+    }
+  }
   write(key, data);
   if (isDiskConnected()) saveDiskProjectData(key, data);
 }

@@ -6,6 +6,8 @@ import { formatDue, isOverdue, priorityLabel } from "../lib/utils";
 import { haptic } from "../lib/haptic";
 import TaskSideSheet from "./TaskSideSheet";
 import { addActivity } from "../lib/storage";
+import { getCrm, initials } from "../lib/crm";
+import { t } from "../lib/i18n";
 
 interface TaskCardProps {
   task: Task;
@@ -18,6 +20,9 @@ interface TaskCardProps {
 export default function TaskCard({ task, phaseIdx, taskIdx, projectKey, phaseNames }: TaskCardProps) {
   const { refresh, showToast, askConfirm } = useApp();
   const [sheetOpen, setSheetOpen] = useState(false);
+  const people = getCrm().people;
+  const assignee = task.assigneeId ? people.find((p) => p.id === task.assigneeId) : undefined;
+  const blocked = (task.dependsOn || []).length > 0 && task.status !== "done";
 
   const handleToggle = () => {
     haptic();
@@ -75,6 +80,10 @@ export default function TaskCard({ task, phaseIdx, taskIdx, projectKey, phaseNam
             {task.notes.slice(0, 40)}{task.notes.length > 40 ? "..." : ""}
           </span>
         )}
+
+        {task.status === "doing" && <span className="chip chip-accent">{t("status.doing")}</span>}
+        {blocked && <span className="chip chip-warn" title={t("task.dependsOn")}>🔒</span>}
+        {assignee && <span className="avatar avatar-sm" title={assignee.name}>{initials(assignee.name)}</span>}
 
         {subTotal > 0 && (
           <span className="subtask-badge">{subDone}/{subTotal}</span>

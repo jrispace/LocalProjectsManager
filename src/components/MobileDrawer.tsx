@@ -24,7 +24,9 @@ export default function MobileDrawer() {
 
   const items = [
     { view: "dashboard", key: "nav.dashboard" },
+    { view: "mytasks", key: "nav.mytasks" },
     { view: "projects", key: "nav.projects" },
+    { view: "crm", key: "nav.crm" },
     { view: "checklist", key: "nav.checklist" },
     { view: "tasks", key: "nav.tasks" },
     { view: "activity", key: "nav.activity" },
@@ -40,7 +42,7 @@ export default function MobileDrawer() {
       />
       <aside className={`sidebar-mobile ${drawerOpen ? "show" : ""}`}>
         <div className="sidebar-header">
-          <img src="/icons/lpm-logo.png" alt="LPM" className="sidebar-logo" />
+          <img src={`${import.meta.env.BASE_URL}icons/lpm-logo.png`} alt="LPM" className="sidebar-logo" />
           <div className="sidebar-brand">
             <h1>{config.company || "Project Manager"}</h1>
             <p>{config.author || "JRiSpace"}</p>

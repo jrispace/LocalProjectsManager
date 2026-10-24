@@ -5,6 +5,7 @@ import { setLang as setLangFn, getLang } from "../lib/i18n";
 import { setTheme as setThemeFn, getTheme, initTheme, type Theme } from "../lib/theme";
 import { initTabSync, notifyOtherTabs, cleanupTabSync } from "../lib/tabsync";
 import { initKeyboardShortcuts } from "../lib/shortcuts";
+import { connectDisk } from "../lib/diskdb";
 
 interface UndoAction {
   label: string;
@@ -91,6 +92,22 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   // ── Init theme on mount ──────────────────────────
   useEffect(() => {
     initTheme();
+  }, []);
+
+  // ── Silent disk reconnect ────────────────────────
+  // The disk database is where projects can survive a cache clear. Reopen it
+  // on boot without prompting (the browser still may require a user gesture
+  // for a stale handle — in that case the user reconnects from Settings).
+  useEffect(() => {
+    let cancelled = false;
+    connectDisk({ silent: true })
+      .then((ok) => {
+        if (ok && !cancelled) setRefreshKey((k) => k + 1);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   // ── Multi-tab sync ───────────────────────────────
